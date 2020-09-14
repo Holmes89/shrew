@@ -12,8 +12,8 @@ const (
 	EOF     = "EOF"
 
 	// Identifiers + literals
-	IDENT = "IDENT" // add, foobar, x, y, ...
-	INT   = "INT"   // 1343456
+	ATOM = "ATOM" // add, foobar, x, y, ...
+	INT  = "INT"  // 1343456
 
 	// Operators
 	PLUS     = "+"
@@ -22,37 +22,52 @@ const (
 	SLASH    = "/"
 	LT       = "<"
 	GT       = ">"
+	EQ       = "="
 
-	// Delimiters
-	COMMA     = ","
-	SEMICOLON = ";"
-
-	LPAREN   = "("
-	RPAREN   = ")"
-	LBRACE   = "{"
-	RBRACE   = "}"
-	LBRACKET = "["
-	RBRACKET = "]"
+	LPAREN = "("
+	RPAREN = ")"
 
 	// Keywords
-	FUNCTION = "FUNCTION"
-	ATOM     = "ATOM"
-	QUOTE    = "QUOTE"
-	EQ       = "EQ"
-	CONS     = "CONS"
-	CAR      = "CAR"
-	CDR      = "CDR"
-	COND     = "COND"
-	LET      = "LET"
+	DEFINE = "DEFINE"
+	LAMBDA = "LAMBDA"
+	QUOTE  = "QUOTE"
+	NIL    = "NIL"
+	CONS   = "CONS"
+	CAR    = "CAR"
+	CDR    = "CDR"
+	COND   = "COND"
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
+	LIST   = "LIST"
+	AND    = "AND"
+	OR     = "OR"
+	NOT    = "NOT"
+	IF     = "IF"
+	ELSE   = "ELSE"
 )
 
 var keywords = map[string]TokenType{
-	"defn": FUNCTION,
+	"#t":     TRUE,
+	"#f":     FALSE,
+	"'":      QUOTE,
+	"define": DEFINE,
+	"lambda": LAMBDA,
+	"quote":  QUOTE,
+	"list":   LIST,
+	"car":    CAR,
+	"cdr":    CDR,
+	"cons":   CONS,
+	"cond":   COND,
+	"and":    AND,
+	"or":     OR,
+	"not":    NOT,
+	"if":     IF,
+	"else":   ELSE,
 }
 
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
-	return IDENT
+	return ATOM
 }
