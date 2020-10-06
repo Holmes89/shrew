@@ -1,30 +1,19 @@
 package repl
 
 import (
-	"bufio"
 	"fmt"
 	"io"
-
-	"github.com/holmes89/shrew/lexer"
-	"github.com/holmes89/shrew/token"
 )
 
 const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
-	scanner := bufio.NewScanner(in)
-
 	for {
-		fmt.Print(PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
-			return
-		}
-
-		line := scanner.Text()
-		l := lexer.New(line)
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
+		fmt.Fprint(out, PROMPT)
+		l := NewLexer(in)
+		for tok := l.NextToken(); tok.typ != tokenEOF; tok = l.NextToken() {
+			fmt.Fprintf(out, "%+v\n", tok)
+			fmt.Fprint(out, PROMPT)
 		}
 	}
 }
