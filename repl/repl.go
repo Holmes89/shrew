@@ -13,7 +13,6 @@ func Start(in io.Reader, out io.Writer) {
 		l := NewLexer(in)
 		for tok := l.NextToken(); tok.typ != tokenEOF; tok = l.NextToken() {
 			fmt.Fprintf(out, "%+v\n", tok)
-			fmt.Fprint(out, PROMPT)
 		}
 	}
 }
