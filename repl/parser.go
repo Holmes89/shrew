@@ -52,7 +52,7 @@ func (p *Parser) quote() (*Expr, error) {
 
 func (p *Parser) list() (*Expr, error) {
 	ptok := p.lex.Peek()
-
+	//TODO better peek
 	switch ptok {
 	case ')':
 		return nil, nil
