@@ -24,6 +24,26 @@ func NewLexer(r io.Reader) *Lexer {
 	}
 }
 
+func (l *Lexer) IsNextLParen() bool {
+
+	tok := l.Peek()
+	if isSpace(tok) {
+		l.Next()
+		return l.IsNextLParen()
+	}
+	return tok == '('
+}
+
+func (l *Lexer) IsNextRParen() bool {
+
+	tok := l.Peek()
+	if isSpace(tok) {
+		l.Next()
+		return l.IsNextRParen()
+	}
+	return tok == ')'
+}
+
 func (l *Lexer) NextToken() *Token {
 	for {
 		r := l.Next()

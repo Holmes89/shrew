@@ -3,12 +3,68 @@ package repl
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type Expr struct {
 	atom *Token
 	car  *Expr
 	cdr  *Expr
+}
+
+// String returns the expression as a formatted list (unless printSExpr is set).
+func (e *Expr) String() string {
+	if e == nil {
+		return "nil"
+	}
+	var b strings.Builder
+	e.buildString(&b, true)
+	return b.String()
+}
+
+// buildString is the internals of the String method. simplifyQuote
+// specifies whether (quote expr) should be printed as 'expr.
+func (e *Expr) buildString(b *strings.Builder, simplifyQuote bool) {
+	if e == nil {
+		b.WriteString("nil")
+		return
+	}
+	if e.atom != nil {
+		e.atom.buildString(b)
+		return
+	}
+	// Simplify (quote a) to 'a.
+	if simplifyQuote && car(e).getAtom() == tokenQuoteWord {
+		b.WriteByte('\'')
+		car(cdr(e)).buildString(b, simplifyQuote)
+		return
+	}
+	b.WriteByte('(')
+	for {
+		car, cdr := e.car, e.cdr
+		car.buildString(b, simplifyQuote)
+		if cdr == nil {
+			break
+		}
+		if cdr.atom != nil {
+			if cdr.atom.text == "nil" {
+				break
+			}
+			b.WriteString(" . ")
+			cdr.buildString(b, simplifyQuote)
+			break
+		}
+		b.WriteByte(' ')
+		e = cdr
+	}
+	b.WriteByte(')')
+}
+
+func (e *Expr) getAtom() *Token {
+	if e != nil && e.atom != nil {
+		return e.atom
+	}
+	return nil
 }
 
 type Parser struct {
@@ -51,12 +107,11 @@ func (p *Parser) quote() (*Expr, error) {
 }
 
 func (p *Parser) list() (*Expr, error) {
-	ptok := p.lex.Peek()
-	//TODO better peek
-	switch ptok {
-	case ')':
+	if p.lex.IsNextRParen() {
 		return nil, nil
-	case '(':
+	}
+
+	if p.lex.IsNextLParen() {
 		exp, err := p.Parse()
 		if err != nil {
 			return nil, err
