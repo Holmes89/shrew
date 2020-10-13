@@ -11,7 +11,7 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-
+	context := NewContext(-1)
 	for {
 		fmt.Print(PROMPT)
 		scanned := scanner.Scan()
@@ -26,6 +26,7 @@ func Start(in io.Reader, out io.Writer) {
 			fmt.Fprintf(out, "%+v\n", err)
 			continue
 		}
-		fmt.Fprintf(out, "%+v\n", exp)
+		res := context.Eval(exp)
+		fmt.Fprintf(out, "%+v\n", res)
 	}
 }

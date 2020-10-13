@@ -167,9 +167,3 @@ func cons(car, cdr *Expr) *Expr {
 		cdr: cdr,
 	}
 }
-
-func atomExpr(tok *Token) *Expr {
-	return &Expr{
-		atom: tok,
-	}
-}
