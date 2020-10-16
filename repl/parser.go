@@ -15,7 +15,7 @@ type Expr struct {
 // String returns the expression as a formatted list (unless printSExpr is set).
 func (e *Expr) String() string {
 	if e == nil {
-		return "nil"
+		return "null"
 	}
 	var b strings.Builder
 	e.buildString(&b, true)
@@ -26,7 +26,7 @@ func (e *Expr) String() string {
 // specifies whether (quote expr) should be printed as 'expr.
 func (e *Expr) buildString(b *strings.Builder, simplifyQuote bool) {
 	if e == nil {
-		b.WriteString("nil")
+		b.WriteString("null")
 		return
 	}
 	if e.atom != nil {
@@ -47,7 +47,7 @@ func (e *Expr) buildString(b *strings.Builder, simplifyQuote bool) {
 			break
 		}
 		if cdr.atom != nil {
-			if cdr.atom.text == "nil" {
+			if cdr.atom.text == "null" {
 				break
 			}
 			b.WriteString(" . ")

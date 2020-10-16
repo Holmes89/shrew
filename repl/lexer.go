@@ -62,6 +62,15 @@ func (l *Lexer) NextToken() *Token {
 			return mkToken(tokenRpar, ")")
 		case r == '.':
 			return mkToken(tokenDot, ".")
+		case r == '#':
+			p := l.Peek()
+			if p == 't' {
+				return tokenT
+			}
+			if p == 'f' {
+				return tokenF
+			}
+			fallthrough
 		case r == '-' || r == '+':
 			if !isNumber(l.Peek()) {
 				return mkToken(tokenChar, string(r))
@@ -117,7 +126,7 @@ func isNumber(r rune) bool {
 }
 
 func isAlphanum(r rune) bool {
-	return r == '_' || isNumber(r) || unicode.IsLetter(r)
+	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!'
 }
 
 func (l *Lexer) accum(r rune, valid func(rune) bool) {
@@ -180,17 +189,18 @@ var (
 	tokenCond         = mkAtom("cond")
 	tokenCons         = mkAtom("cons")
 	tokenDefn         = mkAtom("define")
-	tokenEq           = mkAtom("eq")
+	tokenEq           = mkAtom("eq?")
 	tokenLambda       = mkAtom("lambda")
 	tokenIf           = mkAtom("if")
 	tokenGt           = mkAtom(">")
-	tokenGe           = mkAtom(">=")
 	tokenLambdaSymbol = mkAtom("λ")
 	tokenLt           = mkAtom("<")
-	tokenLe           = mkAtom("<=")
 	tokenMul          = mkAtom("*")
-	tokenDiv          = mkAtom("*")
 	tokenOr           = mkAtom("or")
 	tokenQuoteWord    = mkAtom("quote")
 	tokenSub          = mkAtom("-")
+	tokenNullQ        = mkAtom("null?")
+	tokenAtomQ        = mkAtom("atom?")
+	tokenPairQ        = mkAtom("pair?")
+	tokenElse         = mkAtom("else")
 )

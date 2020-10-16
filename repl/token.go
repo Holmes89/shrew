@@ -35,7 +35,7 @@ func (t Token) String() string {
 	if t.typ == tokenNumber {
 		return fmt.Sprint(t.typ, t.num)
 	}
-	return fmt.Sprint(t.typ, t.text)
+	return fmt.Sprint(t.typ, " ", t.text)
 }
 
 func (t Token) buildString(b *strings.Builder) {
