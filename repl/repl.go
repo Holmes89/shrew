@@ -34,11 +34,12 @@ func Start(in io.Reader, out io.Writer) {
 		p := NewParser(NewLexer(strings.NewReader(line)))
 
 		exp, err := p.Parse()
-		if err == ErrMissingRightParen {
-			continue
-		}
+		// if err == ErrMissingRightParen {
+		// 	continue
+		// }
 		if err != nil {
 			fmt.Fprintf(out, "%+v\n", err)
+			line = ""
 			continue
 		}
 		res := context.Eval(exp)

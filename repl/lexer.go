@@ -78,6 +78,8 @@ func (l *Lexer) NextToken() *Token {
 			fallthrough
 		case isNumber(r):
 			return l.number(r)
+		case r == '"':
+			return l.str(r)
 		case r == '\'':
 			return mkToken(tokenQuote, "'")
 		case r == '_' || unicode.IsLetter(r):
@@ -129,6 +131,10 @@ func isAlphanum(r rune) bool {
 	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!'
 }
 
+func isNotDoubleQuote(r rune) bool { //doesn't support escaping in string
+	return r != '"'
+}
+
 func (l *Lexer) accum(r rune, valid func(rune) bool) {
 	l.buf.Reset()
 	for {
@@ -158,9 +164,17 @@ func (l *Lexer) alphanum(typ TokenType, r rune) *Token {
 	return mkToken(typ, l.buf.String())
 }
 
+func (l *Lexer) str(r rune) *Token {
+	l.accum(r, isNotDoubleQuote)
+	l.endToken()
+	l.buf.WriteRune(l.Next()) //add end quote
+	fmt.Println(l.buf.String())
+	return mkToken(tokenString, l.buf.String())
+}
+
 // endToken guarantees that the following rune separates this token from the next.
 func (l *Lexer) endToken() {
-	if r := l.Peek(); isAlphanum(r) || !isSpace(r) && r != '(' && r != ')' && r != '.' && r != EofRune {
+	if r := l.Peek(); isAlphanum(r) || !isSpace(r) && r != '(' && r != ')' && r != '.' && r != '"' && r != EofRune {
 		errorf("invalid token after %s", l.String())
 	}
 }

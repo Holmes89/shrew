@@ -84,7 +84,7 @@ func (p *Parser) Parse() (*Expr, error) {
 		return nil, ErrEndOfInputStream
 	case tokenQuote:
 		return p.quote()
-	case tokenAtom, tokenConst, tokenNumber:
+	case tokenAtom, tokenConst, tokenNumber, tokenString:
 		return atomExpr(token), nil
 	case tokenLpar:
 		expr, err := p.list()
@@ -139,7 +139,7 @@ func (p *Parser) list() (*Expr, error) {
 			return nil, err
 		}
 		return cons(q, l), nil
-	case tokenAtom, tokenConst, tokenNumber:
+	case tokenAtom, tokenConst, tokenNumber, tokenString:
 		l, err := p.list()
 		if err != nil {
 			return nil, err
