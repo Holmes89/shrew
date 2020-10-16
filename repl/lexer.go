@@ -203,4 +203,5 @@ var (
 	tokenAtomQ        = mkAtom("atom?")
 	tokenPairQ        = mkAtom("pair?")
 	tokenElse         = mkAtom("else")
+	tokenLoad         = mkAtom("load")
 )

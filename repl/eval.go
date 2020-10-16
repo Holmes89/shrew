@@ -43,6 +43,7 @@ func evalInit() {
 			tokenPairQ: (*Context).isPairFunc,
 			tokenOr:    (*Context).orFunc,
 			tokenSub:   (*Context).subFunc,
+			tokenLoad:  (*Context).loadFunc,
 		}
 	}
 	constT = atomExpr(tokenT)
@@ -393,7 +394,7 @@ func (c *Context) andFunc(name *Token, expr *Expr) *Expr {
 }
 
 func (c *Context) orFunc(name *Token, expr *Expr) *Expr {
-	fmt.Printf("%+v\n", expr)
+
 	if expr == nil {
 		return truthExpr(false)
 	}
@@ -401,4 +402,9 @@ func (c *Context) orFunc(name *Token, expr *Expr) *Expr {
 		return truthExpr(true)
 	}
 	return c.orFunc(name, Cdr(expr))
+}
+
+func (c *Context) loadFunc(name *Token, expr *Expr) *Expr {
+	fmt.Printf("%+v\n", expr)
+	return truthExpr(true)
 }

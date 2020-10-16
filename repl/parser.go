@@ -75,11 +75,13 @@ func NewParser(lex *Lexer) *Parser {
 	return &Parser{lex}
 }
 
+var ErrEndOfInputStream = errors.New("end of input stream")
+
 func (p *Parser) Parse() (*Expr, error) {
 	token := p.lex.NextToken()
 	switch token.typ {
 	case tokenEOF:
-		return nil, errors.New("end of input stream")
+		return nil, ErrEndOfInputStream
 	case tokenQuote:
 		return p.quote()
 	case tokenAtom, tokenConst, tokenNumber:
@@ -105,6 +107,8 @@ func (p *Parser) quote() (*Expr, error) {
 	}
 	return cons(atomExpr(tokenQuoteWord), cons(exp, nil)), nil
 }
+
+var ErrMissingRightParen = errors.New("missing right paren")
 
 func (p *Parser) list() (*Expr, error) {
 	if p.lex.IsNextRParen() {
@@ -144,7 +148,7 @@ func (p *Parser) list() (*Expr, error) {
 	case tokenDot:
 		return p.Parse()
 	}
-	return nil, fmt.Errorf("bad token in expression: %q", tok)
+	return nil, ErrMissingRightParen
 }
 
 func car(e *Expr) *Expr {

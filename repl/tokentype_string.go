@@ -18,12 +18,13 @@ func _() {
 	_ = x[tokenDot-7]
 	_ = x[tokenChar-8]
 	_ = x[tokenQuote-9]
-	_ = x[tokenNewline-10]
+	_ = x[tokenDoubleQuote-10]
+	_ = x[tokenNewline-11]
 }
 
-const _TokenType_name = "tokenErrortokenEOFtokenAtomtokenConsttokenNumbertokenLpartokenRpartokenDottokenChartokenQuotetokenNewline"
+const _TokenType_name = "tokenErrortokenEOFtokenAtomtokenConsttokenNumbertokenLpartokenRpartokenDottokenChartokenQuotetokenDoubleQuotetokenNewline"
 
-var _TokenType_index = [...]uint8{0, 10, 18, 27, 37, 48, 57, 66, 74, 83, 93, 105}
+var _TokenType_index = [...]uint8{0, 10, 18, 27, 37, 48, 57, 66, 74, 83, 93, 109, 121}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

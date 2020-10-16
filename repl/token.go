@@ -26,6 +26,7 @@ const (
 	tokenDot
 	tokenChar
 	tokenQuote
+	tokenDoubleQuote
 	tokenNewline
 )
 
