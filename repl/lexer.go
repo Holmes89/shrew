@@ -168,7 +168,6 @@ func (l *Lexer) str(r rune) *Token {
 	l.accum(r, isNotDoubleQuote)
 	l.endToken()
 	l.buf.WriteRune(l.Next()) //add end quote
-	fmt.Println(l.buf.String())
 	return mkToken(tokenString, l.buf.String())
 }
 
