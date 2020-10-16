@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"math/big"
 )
 
@@ -118,11 +119,15 @@ func (c *Context) consFunc(name *Token, expr *Expr) *Expr {
 
 func (c *Context) eqFunc(name *Token, expr *Expr) *Expr {
 	a := Car(expr)
-	b := Car(Cdr((expr)))
+	b := Car(Cdr(expr))
 	return truthExpr(eq(a, b))
 }
 
 func eq(a, b *Expr) bool {
+	if Car(a) != nil && Car(b) != nil {
+		fmt.Printf("here")
+		return eq(Car(a), Car(b)) && eq(Cdr(a), Cdr(b))
+	}
 	if a == nil || b == nil {
 		return a == nil && b == nil
 	}
@@ -384,10 +389,11 @@ func (c *Context) andFunc(name *Token, expr *Expr) *Expr {
 	if !Car(expr).isTrue() {
 		return truthExpr(false)
 	}
-	return c.andFunc(name, Cdr(expr))
+	return c.andFunc(name, Cdr(Cdr(expr)))
 }
 
 func (c *Context) orFunc(name *Token, expr *Expr) *Expr {
+	fmt.Printf("%+v\n", expr)
 	if expr == nil {
 		return truthExpr(false)
 	}
