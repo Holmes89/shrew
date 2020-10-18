@@ -1,8 +1,10 @@
 package repl
 
 import (
-	"fmt"
+	"bytes"
+	"io/ioutil"
 	"math/big"
+	"strings"
 )
 
 type elemFunc func(*Context, *Token, *Expr) *Expr
@@ -43,7 +45,6 @@ func evalInit() {
 			tokenPairQ: (*Context).isPairFunc,
 			tokenOr:    (*Context).orFunc,
 			tokenSub:   (*Context).subFunc,
-			tokenLoad:  (*Context).loadFunc,
 		}
 	}
 	constT = atomExpr(tokenT)
@@ -126,7 +127,6 @@ func (c *Context) eqFunc(name *Token, expr *Expr) *Expr {
 
 func eq(a, b *Expr) bool {
 	if Car(a) != nil && Car(b) != nil {
-		fmt.Printf("here")
 		return eq(Car(a), Car(b)) && eq(Cdr(a), Cdr(b))
 	}
 	if a == nil || b == nil {
@@ -226,12 +226,14 @@ func (c *Context) apply(name string, fn, x *Expr) *Expr {
 		}
 		return c.apply(name, c.eval(fn), x)
 	}
+
 	if l := Car(fn).getAtom(); l == tokenLambda || l == tokenLambdaSymbol {
 		args := x
 		formals := Car(Cdr(fn))
 		if args.length() != formals.length() {
 			errorf("args mismatch for %s: %s %s", name, formals, args)
 		}
+
 		c.push(name, args)
 		for args != nil {
 			param := Car(formals)
@@ -251,7 +253,6 @@ func (c *Context) apply(name string, fn, x *Expr) *Expr {
 	return x
 }
 
-// eval evaluates the expression, as on page 13 of the Lisp 1.5 book.
 func (c *Context) eval(e *Expr) *Expr {
 	if e == nil {
 		return nil
@@ -263,6 +264,8 @@ func (c *Context) eval(e *Expr) *Expr {
 		switch atom {
 		case tokenQuoteWord:
 			return Car(Cdr(e))
+		case tokenLoad:
+			return c.loadFunc(Car(Cdr(e)))
 		case tokenCond:
 			return c.evcon(Cdr(e))
 		}
@@ -404,7 +407,21 @@ func (c *Context) orFunc(name *Token, expr *Expr) *Expr {
 	return c.orFunc(name, Cdr(expr))
 }
 
-func (c *Context) loadFunc(name *Token, expr *Expr) *Expr {
-	fmt.Printf("%+v\n", expr)
-	return truthExpr(true)
+func (c *Context) loadFunc(expr *Expr) *Expr {
+	pscope := c.scope[len(c.scope)-1]
+	c.scope = c.scope[:len(c.scope)-1]
+	loc := strings.ReplaceAll(expr.atom.text, "\"", "")
+	barray, err := ioutil.ReadFile(loc)
+	if err != nil {
+		errorf("unable to open file: %v", err)
+	}
+	barray = bytes.TrimSpace(barray)
+	p := NewParser(NewLexer(bytes.NewBuffer(barray)))
+	exp, err := p.Parse()
+	if err != nil {
+		errorf("failed parsing: %+v\n", err)
+	}
+	exp = c.Eval(exp)
+	c.scope = append(c.scope, pscope)
+	return exp
 }
