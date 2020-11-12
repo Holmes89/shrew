@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// A scope is effectively a stack frame.
+// A scope is a stack frame.
 type scope struct {
 	vars frame  // The variables defined in this frame.
 	fn   string // The name of the called function, for tracebacks.
