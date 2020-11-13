@@ -128,7 +128,7 @@ func isNumber(r rune) bool {
 }
 
 func isAlphanum(r rune) bool {
-	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!'
+	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-'
 }
 
 func isNotDoubleQuote(r rune) bool { //doesn't support escaping in string
@@ -207,6 +207,7 @@ var (
 	tokenCons         = mkAtom("cons")
 	tokenDefn         = mkAtom("define")
 	tokenEq           = mkAtom("eq?")
+	tokenEqualSymbol  = mkAtom("=")
 	tokenLambda       = mkAtom("lambda")
 	tokenIf           = mkAtom("if")
 	tokenGt           = mkAtom(">")
@@ -219,6 +220,7 @@ var (
 	tokenNullQ        = mkAtom("null?")
 	tokenAtomQ        = mkAtom("atom?")
 	tokenPairQ        = mkAtom("pair?")
+	tokenNumberQ      = mkAtom("number?")
 	tokenElse         = mkAtom("else")
 	tokenLoad         = mkAtom("load")
 )

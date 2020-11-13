@@ -34,17 +34,19 @@ func evalInit() {
 			tokenCons:     (*Context).consFunc,
 			tokenDefn:     (*Context).defnFunc,
 			// tokenDiv:      (*Context).divFunc,
-			tokenEq: (*Context).eqFunc,
+			tokenEq:          (*Context).eqFunc,
+			tokenEqualSymbol: (*Context).eqFunc,
 			// tokenGe:       (*Context).geFunc,
 			tokenGt: (*Context).gtFunc,
 			// tokenLe:       (*Context).leFunc,
-			tokenLt:    (*Context).ltFunc,
-			tokenMul:   (*Context).mulFunc,
-			tokenNullQ: (*Context).nullFunc,
-			tokenAtomQ: (*Context).atomFunc,
-			tokenPairQ: (*Context).isPairFunc,
-			tokenOr:    (*Context).orFunc,
-			tokenSub:   (*Context).subFunc,
+			tokenLt:      (*Context).ltFunc,
+			tokenMul:     (*Context).mulFunc,
+			tokenNullQ:   (*Context).nullFunc,
+			tokenAtomQ:   (*Context).atomFunc,
+			tokenPairQ:   (*Context).isPairFunc,
+			tokenNumberQ: (*Context).isNumberFunc,
+			tokenOr:      (*Context).orFunc,
+			tokenSub:     (*Context).subFunc,
 		}
 	}
 	constT = atomExpr(tokenT)
@@ -85,6 +87,11 @@ func (c *Context) atomFunc(name *Token, expr *Expr) *Expr {
 
 func (c *Context) isAtomFunc(name *Token, expr *Expr) *Expr {
 	return truthExpr(expr != nil && expr.atom != nil)
+}
+
+func (c *Context) isNumberFunc(name *Token, expr *Expr) *Expr {
+	exp := Car(expr)
+	return truthExpr(exp.isNumber())
 }
 
 func (c *Context) isPairFunc(name *Token, expr *Expr) *Expr {
