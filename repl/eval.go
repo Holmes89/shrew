@@ -2,6 +2,7 @@ package repl
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 	"strings"
@@ -415,9 +416,10 @@ func (c *Context) loadFunc(expr *Expr) *Expr {
 	if err != nil {
 		errorf("unable to open file: %v", err)
 	}
-	barray = bytes.TrimSpace(barray)
+	// barray = bytes.TrimSpace(barray)
 	p := NewParser(NewLexer(bytes.NewBuffer(barray)))
 	exp, err := p.Parse()
+	fmt.Printf("%+v\n", exp)
 	if err != nil {
 		errorf("failed parsing: %+v\n", err)
 	}

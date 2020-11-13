@@ -10,6 +10,7 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [Go Lisp Implementation](https://github.com/janne/go-lisp)
 - [Rob Pike Lisp 1.5](https://github.com/robpike/lisp)
 - [McCarthy Paper](http://www-formal.stanford.edu/jmc/recursive/recursive.html)
+- [Little Schemer Files](https://github.com/pkrumins/the-little-schemer)
 
 ### Examples
 - [gigue](https://github.com/suzuken/gigue)
