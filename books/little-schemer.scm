@@ -9,11 +9,11 @@
 ;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; We need to define atom? for Scheme as it's not a primitive                 ;
+; We need to define atom? for Scheme as it's not a primitive, it is in Shrew though              ;
 ;                                                                            ;
-(define atom?                                                                ;
- (lambda (x)                                                                 ;
-    (and (not (pair? x)) (not (null? x)))))                                  ;
+; (define atom?                                                                ;
+;  (lambda (x)                                                                 ;
+;     (and (not (pair? x)) (not (null? x)))))                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; lat? function finds if all the elements in the list are atoms

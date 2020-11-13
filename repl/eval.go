@@ -2,7 +2,6 @@ package repl
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"math/big"
 	"strings"
@@ -418,12 +417,14 @@ func (c *Context) loadFunc(expr *Expr) *Expr {
 	}
 	// barray = bytes.TrimSpace(barray)
 	p := NewParser(NewLexer(bytes.NewBuffer(barray)))
-	exp, err := p.Parse()
-	fmt.Printf("%+v\n", exp)
+	exps, err := p.ParseAll()
 	if err != nil {
 		errorf("failed parsing: %+v\n", err)
 	}
-	exp = c.Eval(exp)
+	var exp *Expr // Return last expression
+	for _, e := range exps {
+		exp = c.Eval(e)
+	}
 	c.scope = append(c.scope, pscope)
 	return exp
 }

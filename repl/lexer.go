@@ -179,7 +179,11 @@ func (l *Lexer) endToken() {
 }
 
 func (l *Lexer) skipToNewline() {
-	l.Next()
+	for {
+		if r := l.Next(); r == 10 || r == 13 { //new lines and carrage returns
+			break
+		}
+	}
 }
 
 func errorf(format string, args ...interface{}) {

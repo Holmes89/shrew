@@ -77,6 +77,21 @@ func NewParser(lex *Lexer) *Parser {
 
 var ErrEndOfInputStream = errors.New("end of input stream")
 
+func (p *Parser) ParseAll() ([]*Expr, error) {
+	var exps []*Expr
+	for {
+		e, err := p.Parse()
+		if err == ErrEndOfInputStream {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		exps = append(exps, e)
+	}
+	return exps, nil
+}
+
 func (p *Parser) Parse() (*Expr, error) {
 	token := p.lex.NextToken()
 	switch token.typ {
