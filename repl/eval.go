@@ -40,6 +40,7 @@ func evalInit() {
 			tokenGt: (*Context).gtFunc,
 			// tokenLe:       (*Context).leFunc,
 			tokenLt:      (*Context).ltFunc,
+			tokenExpt:    (*Context).exptFunc,
 			tokenMul:     (*Context).mulFunc,
 			tokenNullQ:   (*Context).nullFunc,
 			tokenAtomQ:   (*Context).atomFunc,
@@ -358,7 +359,8 @@ func div(a, b *big.Int) *big.Int {
 	}
 	return new(big.Int).Div(a, b)
 }
-func mul(a, b *big.Int) *big.Int { return new(big.Int).Mul(a, b) }
+func mul(a, b *big.Int) *big.Int  { return new(big.Int).Mul(a, b) }
+func expt(a, b *big.Int) *big.Int { return new(big.Int).Exp(a, b, nil) }
 func rem(a, b *big.Int) *big.Int {
 	if b.Cmp(&zero) == 0 {
 		errorf("rem by zero")
@@ -367,11 +369,12 @@ func rem(a, b *big.Int) *big.Int {
 }
 func sub(a, b *big.Int) *big.Int { return new(big.Int).Sub(a, b) }
 
-func (c *Context) addFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, add) }
-func (c *Context) divFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, div) }
-func (c *Context) mulFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, mul) }
-func (c *Context) remFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, rem) }
-func (c *Context) subFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, sub) }
+func (c *Context) addFunc(name *Token, expr *Expr) *Expr  { return c.mathFunc(expr, add) }
+func (c *Context) divFunc(name *Token, expr *Expr) *Expr  { return c.mathFunc(expr, div) }
+func (c *Context) mulFunc(name *Token, expr *Expr) *Expr  { return c.mathFunc(expr, mul) }
+func (c *Context) exptFunc(name *Token, expr *Expr) *Expr { return c.mathFunc(expr, expt) }
+func (c *Context) remFunc(name *Token, expr *Expr) *Expr  { return c.mathFunc(expr, rem) }
+func (c *Context) subFunc(name *Token, expr *Expr) *Expr  { return c.mathFunc(expr, sub) }
 
 // Comparison.
 
@@ -422,11 +425,10 @@ func (c *Context) loadFunc(expr *Expr) *Expr {
 	if err != nil {
 		errorf("unable to open file: %v", err)
 	}
-	// barray = bytes.TrimSpace(barray)
 	p := NewParser(NewLexer(bytes.NewBuffer(barray)))
 	exps, err := p.ParseAll()
 	if err != nil {
-		errorf("failed parsing: %+v\n", err)
+		errorf("failed parsing: %+v\n,", err)
 	}
 	var exp *Expr // Return last expression
 	for _, e := range exps {

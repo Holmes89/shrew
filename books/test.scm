@@ -664,3 +664,1046 @@
 ; Example of rempick-one
 ;
 (rempick-one 4 '(hotdogs with hot mustard))     ; '(hotdogs with mustard)
+
+;
+; Chapter 5 of The Little Schemer:
+; *Oh My Gawd*: It's Full of Stars
+;
+
+; The rember* function removes all matching atoms from an s-expression
+;
+(define rember*
+  (lambda (a l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a)
+          (rember* a (cdr l)))
+         (else
+           (cons (car l) (rember* a (cdr l))))))
+      (else
+        (cons (rember* a (car l)) (rember* a (cdr l)))))))
+
+; Examples of rember*
+;
+(rember*
+  'cup
+  '((coffee) cup ((tea) cup) (and (hick)) cup))
+;==> '((coffee) ((tea)) (and (hick)))
+
+(rember*
+  'sauce
+  '(((tomato sauce)) ((bean) sauce) (and ((flying)) sauce)))
+;==> '(((tomato)) ((bean)) (and ((flying))))
+
+
+; The insertR* function insers new to the right of all olds in l
+;
+(define insertR*
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) old)
+          (cons old (cons new (insertR* new old (cdr l)))))
+         (else
+           (cons (car l) (insertR* new old (cdr l))))))
+      (else
+        (cons (insertR* new old (car l)) (insertR* new old (cdr l)))))))
+
+; Example of insertR*
+;
+(insertR*
+  'roast
+  'chuck
+  '((how much (wood)) could ((a (wood) chuck)) (((chuck)))
+    (if (a) ((wood chuck))) could chuck wood))
+; ==> ((how much (wood)) could ((a (wood) chuck roast)) (((chuck roast)))
+;      (if (a) ((wood chuck roast))) could chuck roast wood)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; The first commandment (final version)                                      ;
+;                                                                            ;
+; When recurring on a list of atoms, lat, ask two questions about it:        ;
+; (null? lat) and else.                                                      ;
+; When recurring on a number, n, ask two questions about it: (zero? n) and   ;
+; else.                                                                      ;
+; When recurring on a list of S-expressions, l, ask three questions about    ;
+; it: (null? l), (atom? (car l)), and else.                                  ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; The fourth commandment (final version)                                     ;
+;                                                                            ;
+; Always change at least one argument while recurring. When recurring on a   ;
+; list of atoms, lat, use (cdr l). When recurring on a number, n, use        ;
+; (sub1 n). And when recurring on a list of S-expressions, l, use (car l)    ;
+; and (cdr l) if neither (null? l) nor (atom? (car l)) are true.             ;
+;                                                                            ;
+; It must be changed to be closer to termination. The changing argument must ;
+; be tested in the termination condition:                                    ;
+; * when using cdr, test the termination with null? and                      ;
+; * when using sub1, test termination with zero?.                            ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+; The occur* function counts the number of occurances of an atom in l
+;
+(define occur*
+  (lambda (a l)
+    (cond
+      ((null? l) 0)
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a)
+          (add1 (occur* a (cdr l))))
+         (else
+           (occur* a (cdr l)))))
+      (else
+        (+ (occur* a (car l))
+           (occur* a (cdr l)))))))
+
+; Example of occur*
+;
+(occur*
+  'banana
+  '((banana)
+    (split ((((banana ice)))
+            (cream (banana))
+            sherbet))
+    (banana)
+    (bread)
+    (banana brandy)))
+;==> 5
+
+; The subst* function substitutes all olds for news in l
+;
+(define subst*
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) old)
+          (cons new (subst* new old (cdr l))))
+         (else
+           (cons (car l) (subst* new old (cdr l))))))
+      (else
+        (cons (subst* new old (car l)) (subst* new old (cdr l)))))))
+
+; Example of subst*
+;
+(subst*
+  'orange
+  'banana
+  '((banana)
+    (split ((((banana ice)))
+            (cream (banana))
+            sherbet))
+    (banana)
+    (bread)
+    (banana brandy)))
+;==> '((orange)
+;      (split ((((orange ice)))
+;              (cream (orange))
+;              sherbet))
+;      (orange)
+;      (bread)
+;      (orange brandy))
+
+
+; The insertL* function insers new to the left of all olds in l
+;
+(define insertL*
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) old)
+          (cons new (cons old (insertL* new old (cdr l)))))
+         (else
+           (cons (car l) (insertL* new old (cdr l))))))
+      (else
+        (cons (insertL* new old (car l)) (insertL* new old (cdr l)))))))
+
+; Example of insertL*
+;
+(insertL*
+  'pecker
+  'chuck
+  '((how much (wood)) could ((a (wood) chuck)) (((chuck)))
+    (if (a) ((wood chuck))) could chuck wood))
+; ==> ((how much (wood)) could ((a (wood) chuck pecker)) (((chuck pecker)))
+;      (if (a) ((wood chuck pecker))) could chuck pecker wood)
+
+; The member* function determines if element is in a list l of s-exps
+;
+(define member*
+  (lambda (a l)
+    (cond
+      ((null? l) #f)
+      ((atom? (car l))
+       (or (eq? (car l) a)
+           (member* a (cdr l))))
+      (else
+        (or (member* a (car l))
+            (member* a (cdr l)))))))
+
+; Example of member*
+;
+(member*
+  'chips
+  '((potato) (chips ((with) fish) (chips))))    ; #t
+
+
+; The leftmost function finds the leftmost atom in a non-empty list
+; of S-expressions that doesn't contain the empty list
+;
+(define leftmost
+  (lambda (l)
+    (cond
+      ((atom? (car l)) (car l))
+      (else (leftmost (car l))))))
+
+; Examples of leftmost
+;
+(leftmost '((potato) (chips ((with) fish) (chips))))    ; 'potato
+(leftmost '(((hot) (tuna (and))) cheese))               ; 'hot
+
+; Examples of not-applicable leftmost
+;
+; (leftmost '(((() four)) 17 (seventeen))) ; leftmost s-expression is empty
+; (leftmost '())                           ; empty list
+
+; Or expressed via cond
+;
+; (or a b) = (cond (a #t) (else b))
+
+; And expressed via cond
+;
+; (and a b) = (cond (a b) (else #f))
+; The eqlist? function determines if two lists are equal
+;
+(define eqlist?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((and (null? l1) (atom? (car l2))) #f)
+      ((null? l1) #f)      
+      ((and (atom? (car l1)) (null? l2)) #f)
+      ((and (atom? (car l1)) (atom? (car l2)))
+       (and (eq? (car l1) (car l2))
+            (eqlist? (cdr l1) (cdr l2))))
+      ((atom? (car l1)) #f)
+      ((null? l2) #f)
+      ((atom? (car l2)) #f)
+      (else
+        (and (eqlist? (car l1) (car l2))
+             (eqlist? (cdr l1) (cdr l2)))))))
+      
+
+; Example of eqlist?
+; ;
+(eqlist?
+  '(strawberry ice cream)
+  '(strawberry ice cream))                  ; #t
+
+(eqlist?
+  '(strawberry ice cream)
+  '(strawberry cream ice))                  ; #f
+
+(eqlist?
+  '(banan ((split)))
+  '((banana) split))                        ; #f
+
+(eqlist?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((salami)) (and (soda))))          ; #f
+
+(eqlist?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((sausage)) (and (soda))))         ; #t
+
+; eqlist? rewritten
+;
+(define eqlist2?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      ((and (atom? (car l1)) (atom? (car l2)))
+       (and (eq? (car l1) (car l2))
+            (eqlist2? (cdr l1) (cdr l2))))
+      ((or (atom? (car l1)) (atom? (car l2)))
+       #f)
+      (else
+        (and (eqlist2? (car l1) (car l2))
+             (eqlist2? (cdr l1) (cdr l2)))))))
+
+; Tests of eqlist2?
+;
+(eqlist2?
+  '(strawberry ice cream)
+  '(strawberry ice cream))                  ; #t
+
+(eqlist2?
+  '(strawberry ice cream)
+  '(strawberry cream ice))                  ; #f
+
+(eqlist2?
+  '(banan ((split)))
+  '((banana) split))                        ; #f
+
+(eqlist2?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((salami)) (and (soda))))          ; #f
+
+(eqlist2?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((sausage)) (and (soda))))         ; #t
+
+; The equal? function determines if two s-expressions are equal
+;
+(define equal??
+  (lambda (s1 s2)
+    (cond
+      ((and (atom? s1) (atom? s2))
+       (eq? s1 s2))
+      ((atom? s1) #f)
+      ((atom? s2) #f)
+      (else (eqlist? s1 s2)))))
+
+; Examples of equal??
+;
+(equal?? 'a 'a)                              ; #t
+(equal?? 'a 'b)                              ; #f
+(equal?? '(a) 'a)                            ; #f
+(equal?? '(a) '(a))                          ; #t
+(equal?? '(a) '(b))                          ; #f
+(equal?? '(a) '())                           ; #f
+(equal?? '() '(a))                           ; #f
+(equal?? '(a b c) '(a b c))                  ; #t
+(equal?? '(a (b c)) '(a (b c)))              ; #t
+(equal?? '(a ()) '(a ()))                    ; #t
+
+; equal? simplified
+;
+(define equal2??
+  (lambda (s1 s2)
+    (cond
+      ((and (atom? s1) (atom? s2))
+       (eq? s1 s2))
+      ((or (atom? s1) (atom? s2)) #f)
+      (else (eqlist? s1 s2)))))
+
+; Tests of equal2??
+;
+(equal2?? 'a 'a)                              ; #t
+(equal2?? 'a 'b)                              ; #f
+(equal2?? '(a) 'a)                            ; #f
+(equal2?? '(a) '(a))                          ; #t
+(equal2?? '(a) '(b))                          ; #f
+(equal2?? '(a) '())                           ; #f
+(equal2?? '() '(a))                           ; #f
+(equal2?? '(a b c) '(a b c))                  ; #t
+(equal2?? '(a (b c)) '(a (b c)))              ; #t
+(equal2?? '(a ()) '(a ()))                    ; #t
+
+; eqlist? rewritten using equal2??
+;
+(define eqlist3?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      (else
+        (and (equal2?? (car l1) (car l2))
+             (equal2?? (cdr l1) (cdr l2)))))))
+
+; Tests of eqlist3?
+;
+(eqlist3?
+  '(strawberry ice cream)
+  '(strawberry ice cream))                  ; #t
+
+(eqlist3?
+  '(strawberry ice cream)
+  '(strawberry cream ice))                  ; #f
+
+(eqlist3?
+  '(banan ((split)))
+  '((banana) split))                        ; #f
+
+(eqlist3?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((salami)) (and (soda))))          ; #f
+
+(eqlist3?
+  '(beef ((sausage)) (and (soda)))
+  '(beef ((sausage)) (and (soda))))         ; #t
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; The sixth commandment                                                      ;
+;                                                                            ;
+; Simplify only after the function is correct.                               ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; rember simplified, it now also works on s-expressions, not just atoms
+;
+(define rember
+  (lambda (s l)
+    (cond
+      ((null? l) '())
+      ((equal2?? (car l) s) (cdr l))
+      (else (cons (car l) (rember s (cdr l)))))))
+
+; Example of rember
+;
+(rember
+  '(foo (bar (baz)))
+  '(apples (foo (bar (baz))) oranges))
+;==> '(apples oranges)
+
+;
+; Chapter 6 of The Little Schemer:
+; Shadows
+;
+
+; The numbered? function determines whether a representation of an arithmetic
+; expression contains only numbers besides the o-plus, ox and o-power (for +, * and exp).
+;
+(define numbered?
+  (lambda (aexp)
+    (cond
+      ((atom? aexp) (number? aexp))
+      ((eq? (car (cdr aexp)) 'o-plus)
+       (and (numbered? (car aexp))
+            (numbered? (car (cdr (cdr aexp))))))
+      ((eq? (car (cdr aexp)) 'ox)
+       (and (numbered? (car aexp))
+            (numbered? (car (cdr (cdr aexp))))))
+      ((eq? (car (cdr aexp)) 'o-power)
+       (and (numbered? (car aexp))
+            (numbered? (car (cdr (cdr aexp))))))
+      (else #f))))
+
+; Examples of numbered?
+;
+(numbered? '5)                               ; #t
+(numbered? '(5 o-plus 5))                        ; #t
+(numbered? '(5 o-plus a))                        ; #f
+(numbered? '(5 ox (3 o-power 2)))                 ; #t
+(numbered? '(5 ox (3 'foo 2)))               ; #f
+(numbered? '((5 o-plus 2) ox (3 o-power 2)))          ; #t
+
+; Assuming aexp is a numeric expression, numbered? can be simplified
+;
+(define numbered?
+  (lambda (aexp)
+    (cond
+      ((atom? aexp) (number? aexp))
+      (else
+        (and (numbered? (car aexp))
+             (numbered? (car (cdr (cdr aexp)))))))))
+
+; Tests of numbered?
+;
+(numbered? '5)                               ; #t
+(numbered? '(5 o-plus 5))                        ; #t
+(numbered? '(5 ox (3 o-power 2)))                 ; #t
+(numbered? '((5 o-plus 2) ox (3 o-power 2)))          ; #t
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; The seventh commandment                                                    ;
+;                                                                            ;
+; Recur on the subparts that are of the same nature:                         ;
+; * On the sublists of a list.                                               ;
+; * On the subexpressions of an arithmetic expression.                       ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+; The value function determines the value of an arithmetic expression
+;
+(define value
+  (lambda (nexp)
+    (cond
+      ((atom? nexp) nexp)
+      ((eq? (car (cdr nexp)) 'o-plus)
+       (+ (value (car nexp))
+          (value (car (cdr (cdr nexp))))))
+      ((eq? (car (cdr nexp)) 'o-mul)
+       (* (value (car nexp))
+          (value (car (cdr (cdr nexp))))))
+      ((eq? (car (cdr nexp)) 'o-power)
+       (expt (value (car nexp))
+             (value (car (cdr (cdr nexp))))))
+      (else #f))))
+
+; Examples of value
+;
+(value 13)                                   ; 13
+(value '(1 o-plus 3))                            ; 4
+(value '(1 o-plus (3 o-power 4)))                     ; 82
+
+
+; The value function for prefix notation
+;
+(define value-prefix
+  (lambda (nexp)
+    (cond
+      ((atom? nexp) nexp)
+      ((eq? (car nexp) 'o-plus)
+       (+ (value-prefix (car (cdr nexp)))
+          (value-prefix (car (cdr (cdr nexp))))))
+      ((eq? (car nexp) 'o-mul)
+       (* (value-prefix (car (cdr nexp)))
+          (value-prefix (car (cdr (cdr nexp))))))
+      ((eq? (car nexp) 'o-power)
+       (expt (value-prefix (car (cdr nexp)))
+             (value-prefix (car (cdr (cdr nexp))))))
+      (else #f))))
+
+; Examples of value-prefix
+;
+(value-prefix 13)                            ; 13
+(value-prefix '(o-plus 3 4))                     ; 7
+(value-prefix '(o-plus 1 (o-power 3 4)))              ; 82
+
+
+
+; It's best to invent first-sub-exp and second-sub-exp functions
+; instead of writing (car (cdr (cdr nexp))), etc.
+; These are for prefix notation.
+;
+(define first-sub-exp
+  (lambda (aexp)
+    (car (cdr aexp))))
+
+(define second-sub-exp
+  (lambda (aexp)
+    (car (cdr (cdr aexp)))))
+
+; It's also best to invent operator function,
+; instead of writing (car nexp), etc.
+; This is for prefix notation
+;
+(define operator
+  (lambda (aexp)
+    (car aexp)))
+
+; The new value function that uses helper functions
+;
+(define value-prefix-helper
+  (lambda (nexp)
+    (cond
+      ((atom? nexp) nexp)
+      ((eq? (operator nexp) 'o-plus)
+       (+ (value-prefix (first-sub-exp nexp))
+          (value-prefix (second-sub-exp nexp))))
+      ((eq? (car nexp) 'o-mul)
+       (* (value-prefix (first-sub-exp nexp))
+          (value-prefix (second-sub-exp nexp))))
+      ((eq? (car nexp) 'o-power)
+       (expt (value-prefix (first-sub-exp nexp))
+             (value-prefix (second-sub-exp nexp))))
+      (else #f))))
+
+; Examples of value-prefix-helper
+;
+(value-prefix-helper 13)                            ; 13
+(value-prefix-helper '(o-plus 3 4))                     ; 7
+(value-prefix-helper '(o-plus 1 (o-power 3 4)))              ; 82
+
+
+; Redefine helper functions for infix notation
+;
+(define first-sub-exp
+  (lambda (aexp)
+    (car aexp)))
+
+(define second-sub-exp
+  (lambda (aexp)
+    (car (cdr (cdr aexp)))))
+
+(define operator
+  (lambda (aexp)
+    (car (cdr aexp))))
+
+; Examples of value-prefix-helper of infix notation expressions
+;
+(value-prefix 13)                            ; 13
+(value-prefix '(o-plus 3 4))                     ; 7
+(value-prefix '(o-plus 1 (o-power 3 4)))              ; 82
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                            ;
+; The eighth commandment                                                     ;
+;                                                                            ;
+; Use help functions to abstract from representations.                       ;
+;                                                                            ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; A different number representation:
+; () for zero, (()) for one, (() ()) for two, (() () ()) for three, etc.
+;
+
+; sero? just like zero?
+;
+(define sero?
+  (lambda (n)
+    (null? n)))
+
+; edd1 just like add1
+;
+(define edd1
+  (lambda (n)
+    (cons '() n)))
+
+; zub1 just like sub1
+;
+(define zub1
+  (lambda (n)
+    (cdr n)))
+
+; .+ just like o-plus
+;
+(define dot-plus
+  (lambda (n m)
+    (cond
+      ((sero? m) n)
+      (else
+        (edd1 (dot-plus n (zub1 m)))))))
+    
+; Example of .+
+;
+(dot-plus '(()) '(() ()))     ; (+ 1 2)
+;==> '(() () ())
+
+; tat? just like lat?
+;
+(define tat?
+  (lambda (l)
+    (cond
+      ((null? l) #t)
+      ((atom? (car l))
+       (tat? (cdr l)))
+      (else #f))))
+
+; But does tat? work
+
+(tat? '((()) (()()) (()()())))  ; (lat? '(1 2 3))
+; ==> #f
+
+; Beware of shadows.
+
+;
+; Chapter 7 of The Little Schemer:
+; Friends and Relations
+;
+
+; Example of a set
+;
+'(apples peaches pears plums)
+
+; Example of not a set
+;
+'(apple peaches apple plum)             ; because 'apple appears twice
+
+; The set? function determines if a given lat is a set
+;
+(define set?
+  (lambda (lat)
+    (cond
+      ((null? lat) #t)
+      ((member? (car lat) (cdr lat)) #f)
+      (else
+        (set? (cdr lat))))))
+
+; Examples of set?
+;
+(set? '(apples peaches pears plums))            ; #t
+(set? '(apple peaches apple plum))              ; #f
+(set? '(apple 3 pear 4 9 apple 3 4))            ; #f
+
+; The makeset funciton takes a lat and produces a set
+;
+(define makeset
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      ((member? (car lat) (cdr lat)) (makeset (cdr lat)))
+      (else
+        (cons (car lat) (makeset (cdr lat)))))))
+
+; Example of makeset
+;
+(makeset '(apple peach pear peach plum apple lemon peach))
+; ==> '(pear plum apple lemon peach)
+
+; makeset via multirember from Chapter 3 (03-cons-the-magnificent.ss)
+;
+(define multirember
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) a)
+       (multirember a (cdr lat)))
+      (else
+        (cons (car lat) (multirember a (cdr lat)))))))
+
+(define makeset
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      (else
+        (cons (car lat)
+              (makeset (multirember (car lat) (cdr lat))))))))
+
+; Test makeset
+;
+(makeset '(apple peach pear peach plum apple lemon peach))
+; ==> '(apple peach pear plum lemon)
+
+(makeset '(apple 3 pear 4 9 apple 3 4))
+; ==> '(apple 3 pear 4 9)
+
+; The subset? function determines if set1 is a subset of set2
+;
+(define subset?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #t)
+      ((member? (car set1) set2)
+       (subset? (cdr set1) set2))
+      (else #f))))
+
+; Examples of subset?
+;
+(subset? '(5 chicken wings)
+         '(5 hamburgers 2 pieces fried chicken and light duckling wings))
+; ==> #t
+
+(subset? '(4 pounds of horseradish)
+         '(four pounds of chicken and 5 ounces of horseradish))
+; ==> #f
+
+; A shorter version of subset?
+;
+(define subset?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #t)
+      (else (and (member? (car set1) set2)
+                 (subset? (cdr set1) set2))))))
+
+; Tests of the new subset?
+;
+(subset? '(5 chicken wings)
+         '(5 hamburgers 2 pieces fried chicken and light duckling wings))
+; ==> #t
+
+(subset? '(4 pounds of horseradish)
+         '(four pounds of chicken and 5 ounces of horseradish))
+; ==> #f
+
+; The eqset? function determines if two sets are equal
+;
+(define eqset?
+  (lambda (set1 set2)
+    (and (subset? set1 set2)
+         (subset? set2 set1))))
+
+; Examples of eqset?
+;
+(eqset? '(a b c) '(c b a))          ; #t
+(eqset? '() '())                    ; #t
+(eqset? '(a b c) '(a b))            ; #f
+
+; The intersect? function finds if two sets intersect
+;
+(define intersect?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #f)
+      ((member? (car set1) set2) #t)
+      (else
+        (intersect? (cdr set1) set2)))))
+
+; Examples of intersect?
+;
+(intersect?
+  '(stewed tomatoes and macaroni)
+  '(macaroni and cheese))
+; ==> #t
+
+(intersect?
+  '(a b c)
+  '(d e f))
+; ==> #f
+
+; A shorter version of intersect?
+;
+(define intersect?
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) #f)
+      (else (or (member? (car set1) set2)
+                (intersect? (cdr set1) set2))))))
+
+; Tests of intersect?
+;
+(intersect?
+  '(stewed tomatoes and macaroni)
+  '(macaroni and cheese))
+; ==> #t
+
+(intersect?
+  '(a b c)
+  '(d e f))
+; ==> #f
+
+; The intersect function finds the intersect between two sets
+;
+(define intersect
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) '())
+      ((member? (car set1) set2)
+       (cons (car set1) (intersect (cdr set1) set2)))
+      (else
+        (intersect (cdr set1) set2)))))
+
+; Example of intersect
+;
+(intersect
+  '(stewed tomatoes and macaroni)
+  '(macaroni and cheese))
+; ==> '(and macaroni)
+
+; The union function finds union of two sets
+;
+(define union
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) set2)
+      ((member? (car set1) set2)
+       (union (cdr set1) set2))
+      (else (cons (car set1) (union (cdr set1) set2))))))
+
+; Example of union
+;
+(union
+  '(stewed tomatoes and macaroni casserole)
+  '(macaroni and cheese))
+; ==> '(stewed tomatoes casserole macaroni and cheese)
+
+; The xxx function is the set difference function
+;
+(define xxx
+  (lambda (set1 set2)
+    (cond
+      ((null? set1) '())
+      ((member? (car set1) set2)
+       (xxx (cdr set1) set2))
+      (else
+        (cons (car set1) (xxx (cdr set1) set2))))))
+
+; Example of set difference
+;
+(xxx '(a b c) '(a b d e f))     ; '(c)
+
+; The intersectall function finds intersect between multitude of sets
+;
+(define intersectall
+  (lambda (l-set)
+    (cond
+      ((null? (cdr l-set)) (car l-set))
+      (else
+        (intersect (car l-set) (intersectall (cdr l-set)))))))
+
+; Examples of intersectall
+;
+(intersectall '((a b c) (c a d e) (e f g h a b)))       ; '(a)
+(intersectall
+  '((6 pears and)
+    (3 peaches and 6 peppers)
+    (8 pears and 6 plums)
+    (and 6 prunes with some apples)))                   ; '(6 and)
+
+; The a-pair? function determines if it's a pair
+;
+(define a-pair?
+  (lambda (x)
+    (cond
+      ((atom? x) #f)
+      ((null? x) #f)
+      ((null? (cdr x)) #f)
+      ((null? (cdr (cdr x))) #t)
+      (else #f))))
+
+; Examples of pairs
+;
+(a-pair? '(pear pear))          ; #t
+(a-pair? '(3 7))                ; #t
+(a-pair? '((2) (pair)))         ; #t
+(a-pair? '(full (house)))       ; #t
+
+; Examples of not-pairs
+(a-pair? '())                   ; #f
+(a-pair? '(a b c))              ; #f
+
+; Helper functions for working with pairs
+;
+(define first
+  (lambda (p)
+    (car p)))
+
+(define second
+  (lambda (p)
+    (car (cdr p))))
+
+(define build
+  (lambda (s1 s2)
+    (cons s1 (cons s2 '()))))
+
+; Just an example of how you'd write third
+;
+(define third
+  (lambda (l)
+    (car (cdr (cdr l)))))
+
+; Example of a not-relations
+;
+'(apples peaches pumpkins pie)
+'((apples peaches) (pumpkin pie) (apples peaches))
+
+; Examples of relations
+;
+'((apples peaches) (pumpkin pie))
+'((4 3) (4 2) (7 6) (6 2) (3 4))
+
+; The fun? function determines if rel is a function
+;
+(define fun?
+  (lambda (rel)
+    (set? (firsts rel))))
+
+; It uses firsts function from Chapter 3 (03-cons-the-magnificent.ss)
+(define firsts
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else
+        (cons (car (car l)) (firsts (cdr l)))))))
+
+; Examples of fun?
+;
+(fun? '((4 3) (4 2) (7 6) (6 2) (3 4)))     ; #f
+(fun? '((8 3) (4 2) (7 6) (6 2) (3 4)))     ; #t
+(fun? '((d 4) (b 0) (b 9) (e 5) (g 4)))     ; #f
+
+; The revrel function reverses a relation
+;
+(define revrel
+  (lambda (rel)
+    (cond
+      ((null? rel) '())
+      (else (cons (build (second (car rel))
+                         (first (car rel)))
+                  (revrel (cdr rel)))))))
+
+; Example of revrel
+;
+(revrel '((8 a) (pumpkin pie) (got sick)))
+; ==> '((a 8) (pie pumpkin) (sick got))
+
+; Let's simplify revrel by using inventing revpair that reverses a pair
+;
+(define revpair
+  (lambda (p)
+    (build (second p) (first p))))
+
+; Simplified revrel
+;
+(define revrel
+  (lambda (rel)
+    (cond
+      ((null? rel) '())
+      (else (cons (revpair (car rel)) (revrel (cdr rel)))))))
+
+; Test of simplified revrel
+; 
+(revrel '((8 a) (pumpkin pie) (got sick)))
+; ==> '((a 8) (pie pumpkin) (sick got))
+
+; The fullfun? function determines if the given function is full
+;
+(define fullfun?
+  (lambda (fun)
+    (set? (seconds fun))))
+
+; It uses seconds helper function
+;
+(define seconds
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else
+        (cons (second (car l)) (seconds (cdr l)))))))
+
+; Examples of fullfun?
+;
+(fullfun? '((8 3) (4 2) (7 6) (6 2) (3 4)))     ; #f
+(fullfun? '((8 3) (4 8) (7 6) (6 2) (3 4)))     ; #t
+(fullfun? '((grape raisin)
+            (plum prune)
+            (stewed prune)))                    ; #f
+
+; one-to-one? is the same fullfun?
+;
+(define one-to-one?
+  (lambda (fun)
+    (fun? (revrel fun))))
+
+(one-to-one? '((8 3) (4 2) (7 6) (6 2) (3 4)))     ; #f
+(one-to-one? '((8 3) (4 8) (7 6) (6 2) (3 4)))     ; #t
+(one-to-one? '((grape raisin)
+               (plum prune)
+               (stewed prune)))                    ; #f
+
+(one-to-one? '((chocolate chip) (doughy cookie)))
+; ==> #t and you deserve one now!
+
+;
+; Chapter 8 of The Little Schemer:
+; Lambda the Ultimate
+;
+;
+
+; The rember-f function takes the test function, element, and a list
+; and removes the element that test true
+;
+(define rember-f
+  (lambda (test? a l)
+    (cond
+      ((null? l) '())
+      ((test? (car l) a) (cdr l))
+      (else
+        (cons (car l) (rember-f test? a (cdr l)))))))
+
+; Examples of rember-f
+;
+(rember-f eq? 2 '(1 2 3 4 5))
+; ==> '(1 3 4 5)

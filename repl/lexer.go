@@ -128,7 +128,7 @@ func isNumber(r rune) bool {
 }
 
 func isAlphanum(r rune) bool {
-	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-'
+	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-' || r == '*'
 }
 
 func isNotDoubleQuote(r rune) bool { //doesn't support escaping in string
@@ -180,7 +180,7 @@ func (l *Lexer) endToken() {
 
 func (l *Lexer) skipToNewline() {
 	for {
-		if r := l.Next(); r == 10 || r == 13 { //new lines and carrage returns
+		if r := l.Next(); r == 10 || r == 13 || r == scanner.EOF { //new lines and carrage returns
 			break
 		}
 	}
@@ -211,6 +211,7 @@ var (
 	tokenLambda       = mkAtom("lambda")
 	tokenIf           = mkAtom("if")
 	tokenGt           = mkAtom(">")
+	tokenExpt         = mkAtom("expt")
 	tokenLambdaSymbol = mkAtom("λ")
 	tokenLt           = mkAtom("<")
 	tokenMul          = mkAtom("*")

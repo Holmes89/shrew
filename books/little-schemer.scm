@@ -682,22 +682,6 @@
 ; Chapter 5 of The Little Schemer:
 ; *Oh My Gawd*: It's Full of Stars
 ;
-; Code examples assemled by Peteris Krumins (peter@catonmat.net).
-; His blog is at http://www.catonmat.net  --  good coders code, great reuse.
-;
-; Get yourself this wonderful book at Amazon: http://bit.ly/4GjWdP
-;
-
-; The atom? primitive
-;
-(define atom?
- (lambda (x)
-    (and (not (pair? x)) (not (null? x)))))
-
-; The add1 primitive
-;
-(define add1
-  (lambda (n) (+ n 1)))
 
 ; The rember* function removes all matching atoms from an s-expression
 ;
@@ -965,16 +949,13 @@
 (define eqlist2?
   (lambda (l1 l2)
     (cond
-      ; case 1: l1 is empty, l2 is empty, atom, list
       ((and (null? l1) (null? l2)) #t)
       ((or (null? l1) (null? l2)) #f)
-      ; case 2: l1 is atom, l2 is empty, atom, list
       ((and (atom? (car l1)) (atom? (car l2)))
        (and (eq? (car l1) (car l2))
             (eqlist2? (cdr l1) (cdr l2))))
       ((or (atom? (car l1)) (atom? (car l2)))
        #f)
-      ; case 3: l1 is a list, l2 is empty, atom, list
       (else
         (and (eqlist2? (car l1) (car l2))
              (eqlist2? (cdr l1) (cdr l2)))))))
