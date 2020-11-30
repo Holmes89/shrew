@@ -59,25 +59,16 @@ func (c *Context) applyFunc(name *Token, expr *Expr) *Expr {
 	return c.apply("applyFunc", Car(expr), Cdr(expr))
 }
 
-func (c *Context) defnFunc(name *Token, expr *Expr) *Expr {
-	var names []*Expr
-	for expr = Cdr(expr); expr != nil; expr = Cdr(Cdr(expr)) {
-		name := Car(expr)
-		atom := name.getAtom()
-		if atom == nil {
-			errorf("malformed define")
-		}
-		fn := Car(Cdr(expr))
-		if fn == nil {
-			errorf("empty function in define")
-		}
-		names = append(names, name)
-		c.set(atom, fn)
+func (c *Context) defnFunc(_ *Token, expr *Expr) *Expr {
+	name := Car(expr)
+	atom := name.getAtom()
+	if atom == nil {
+		errorf("malformed define")
 	}
+	fn := Car(Cdr(expr))
+	c.set(atom, fn)
 	var result *Expr
-	for i := len(names) - 1; i >= 0; i-- {
-		result = Cons(names[i], result)
-	}
+	result = Cons(name, result)
 	return result
 }
 
@@ -197,7 +188,7 @@ func (c *Context) Eval(expr *Expr) *Expr {
 
 	// Define
 	if a := Car(expr).getAtom(); a == tokenDefn {
-		return c.defnFunc(nil, expr)
+		return c.apply("define", Car(expr), Cdr(expr))
 	}
 	// General expression, treat as a function invocation by
 	// calling apply((lambda () expr), nil).

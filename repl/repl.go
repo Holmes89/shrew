@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ const (
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	context := NewContext(-1)
+	defer handler(context)
 	var line string
 	for {
 
@@ -45,5 +47,23 @@ func Start(in io.Reader, out io.Writer) {
 		res := context.Eval(exp)
 		fmt.Fprintf(out, "%+v\n", res)
 		line = ""
+	}
+}
+
+// handler handles panics from the interpreter. These are part
+// of normal operation, signaling parsing and execution errors.
+func handler(context *Context) {
+	e := recover()
+	if e != nil {
+		switch e := e.(type) {
+		case EOF:
+			os.Exit(0)
+		case Error:
+			fmt.Fprintln(os.Stderr, e)
+			fmt.Fprint(os.Stderr, context.StackTrace())
+			context.PopStack()
+		default:
+			panic(e)
+		}
 	}
 }
