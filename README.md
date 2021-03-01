@@ -2,6 +2,7 @@
 
 In an attempt to learn more about compilers and programming languages I am attempting to write a LISP using Go.
 
+![Shrew](./shrew.png)
 
 ### Resources
 - [Root of LISP](http://www.paulgraham.com/rootsoflisp.html)
