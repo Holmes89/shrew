@@ -1,6 +1,6 @@
 # Shrew
 
-In an attempt to learn more about compilers and programming languages I am attempting to write a LISP using Go.
+In an attempt to learn more about compilers and programming languages I am attempting to write a Scheme LISP using Go.
 
 ![Shrew](./shrew.png)
 
