@@ -100,7 +100,7 @@ func eval_ast(ast Expression, env map[string]Expression) (Expression, error) {
 		return Vector{Val: lst}, nil
 	case HashMap_Q(ast):
 		m := ast.(HashMap)
-		new_hm := HashMap{map[Keyword]Expression{}, nil}
+		new_hm := HashMap{Val: map[Keyword]Expression{}}
 		for k, v := range m.Val {
 			ke, e1 := eval(k, env)
 			if e1 != nil {
