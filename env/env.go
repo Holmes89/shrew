@@ -2,6 +2,7 @@ package env
 
 import (
 	"errors"
+	"fmt"
 
 	. "github.com/holmes89/shrew/types"
 )
@@ -42,7 +43,7 @@ type EnvFunc func(a []Expression) (Expression, error)
 func DefaultEnv() EnvType {
 
 	env, _ := NewEnv(nil, nil, nil)
-	env.Set(symbolDiv, add)
+	env.Set(symbolAdd, add)
 	env.Set(symbolSubtract, sub)
 	env.Set(symbolMul, mul)
 	env.Set(symbolDiv, div)
@@ -107,7 +108,7 @@ func (e Env) Set(key Symbol, value Expression) Expression {
 func (e Env) Get(key Symbol) (Expression, error) {
 	env := e.Find(key)
 	if env == nil {
-		return nil, errors.New("'" + key.Val + "' not found")
+		return nil, fmt.Errorf("'%s' not found", key.Val)
 	}
 	return env.(Env).data[key.Val], nil
 }
