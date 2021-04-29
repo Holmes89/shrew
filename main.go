@@ -103,6 +103,43 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			let_env.Set(arr1[i].(Symbol), exp)
 		}
 		return eval(a2, let_env)
+	case "do":
+		el, e := eval_ast(List{
+			Val: list.Val[1:],
+		}, env)
+		if e != nil {
+			return nil, e
+		}
+		lst := el.(List).Val
+		if len(lst) == 0 {
+			return nil, nil
+		}
+		return lst[len(lst)-1], nil
+	case "if":
+		cond, e := eval(a1, env)
+		if e != nil {
+			return nil, e
+		}
+		if cond == nil || cond == false {
+			if len(list.Val) >= 4 {
+				return eval(list.Val[3], env)
+			} else {
+				return nil, nil
+			}
+		} else {
+			return eval(a2, env)
+		}
+	case "λ":
+		fallthrough
+	case "lambda":
+		var f EnvFunc = func(arguments []Expression) (Expression, error) {
+			new_env, e := NewEnv(env, a1, List{Val: arguments})
+			if e != nil {
+				return nil, e
+			}
+			return eval(a2, new_env)
+		}
+		return f, nil
 	default:
 		el, e := eval_ast(ast, env)
 		if e != nil {
