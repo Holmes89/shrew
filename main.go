@@ -20,7 +20,7 @@ func main() {
 	in := os.Stdin
 	out := os.Stdout
 	for k, v := range core.NS {
-		repl_env.Set(k, v)
+		repl_env.Set(k, Func{Fn: v})
 	}
 	for {
 		fmt.Print("shrew=> ")
@@ -31,7 +31,7 @@ func main() {
 		}
 		text := strings.TrimRight(scanner.Text(), "\n")
 
-		res, err := repl(text)
+		res, err := Repl(text)
 		if err != nil {
 			if err.Error() == "<empty line>" {
 				continue
@@ -51,109 +51,126 @@ func read(str string) (Expression, error) {
 
 // eval
 func eval(ast Expression, env EnvType) (Expression, error) {
-	list, ok := ast.(List)
-	if !ok {
-		return eval_ast(ast, env)
-	}
-
-	listLen := len(list.Val)
-	if listLen == 0 {
-		return ast, nil
-	}
-
-	// apply list
-	a0 := list.Val[0]
-	var a1 Expression = nil
-	var a2 Expression = nil
-
-	if listLen > 1 {
-		a1 = list.Val[1]
-	}
-
-	if listLen > 2 {
-		a2 = ast.(List).Val[2]
-	}
-
-	a0sym := "__<*fn*>__"
-	if Symbol_Q(a0) {
-		a0sym = a0.(Symbol).Val
-	}
-
-	switch a0sym {
-	case "define":
-		res, e := eval(a2, env)
-		if e != nil {
-			return nil, e
+	for {
+		list, ok := ast.(List)
+		if !ok {
+			return eval_ast(ast, env)
 		}
-		return env.Set(a1.(Symbol), res), nil
-	case "let*":
-		let_env, e := NewEnv(env, nil, nil)
-		if e != nil {
-			return nil, e
+
+		listLen := len(list.Val)
+		if listLen == 0 {
+			return ast, nil
 		}
-		arr1, e := GetSlice(a1)
-		if e != nil {
-			return nil, e
+
+		// apply list
+		a0 := list.Val[0]
+		var a1 Expression = nil
+		var a2 Expression = nil
+
+		if listLen > 1 {
+			a1 = list.Val[1]
 		}
-		for i := 0; i < len(arr1); i += 2 {
-			if !Symbol_Q(arr1[i]) {
-				return nil, errors.New("non-symbol bind value")
-			}
-			exp, e := eval(arr1[i+1], let_env)
+
+		if listLen > 2 {
+			a2 = ast.(List).Val[2]
+		}
+
+		a0sym := "__<*fn*>__"
+		if Symbol_Q(a0) {
+			a0sym = a0.(Symbol).Val
+		}
+
+		switch a0sym {
+		case "define":
+			res, e := eval(a2, env)
 			if e != nil {
 				return nil, e
 			}
-			let_env.Set(arr1[i].(Symbol), exp)
-		}
-		return eval(a2, let_env)
-	case "do":
-		el, e := eval_ast(List{
-			Val: list.Val[1:],
-		}, env)
-		if e != nil {
-			return nil, e
-		}
-		lst := el.(List).Val
-		if len(lst) == 0 {
-			return nil, nil
-		}
-		return lst[len(lst)-1], nil
-	case "if":
-		cond, e := eval(a1, env)
-		if e != nil {
-			return nil, e
-		}
-		if cond == nil || cond == false {
-			if len(list.Val) >= 4 {
-				return eval(list.Val[3], env)
-			} else {
+			return env.Set(a1.(Symbol), res), nil
+		case "let*":
+			let_env, e := NewEnv(env, nil, nil)
+			if e != nil {
+				return nil, e
+			}
+			arr1, e := GetSlice(a1)
+			if e != nil {
+				return nil, e
+			}
+			for i := 0; i < len(arr1); i += 2 {
+				if !Symbol_Q(arr1[i]) {
+					return nil, errors.New("non-symbol bind value")
+				}
+				exp, e := eval(arr1[i+1], let_env)
+				if e != nil {
+					return nil, e
+				}
+				let_env.Set(arr1[i].(Symbol), exp)
+			}
+			ast = a2
+			env = let_env
+		case "do":
+			el, e := eval_ast(List{
+				Val: list.Val[1:],
+			}, env)
+			if e != nil {
+				return nil, e
+			}
+			lst := el.(List).Val
+			if len(lst) == 1 {
 				return nil, nil
 			}
-		} else {
-			return eval(a2, env)
-		}
-	case "λ":
-		fallthrough
-	case "lambda":
-		var f EnvFunc = func(arguments []Expression) (Expression, error) {
-			new_env, e := NewEnv(env, a1, List{Val: arguments})
+			ast = lst[len(lst)-1]
+		case "if":
+			cond, e := eval(a1, env)
 			if e != nil {
 				return nil, e
 			}
-			return eval(a2, new_env)
+			if cond == nil || cond == false {
+				if len(list.Val) >= 4 {
+					ast = list.Val[3]
+				} else {
+					return nil, nil
+				}
+			} else {
+				ast = a2
+			}
+		case "λ":
+			fallthrough
+		case "lambda":
+			fn := ExpressionFunc{
+				Eval:    eval,
+				Exp:     a2,
+				Env:     env,
+				Params:  a1,
+				IsMacro: false,
+				GenEnv:  NewEnv,
+				Meta:    nil,
+			}
+
+			return fn, nil
+		default:
+			el, e := eval_ast(ast, env)
+			if e != nil {
+				return nil, e
+			}
+			f := el.(List).Val[0]
+			if ExpressionFunc_Q(f) {
+				fn := f.(ExpressionFunc)
+				ast = fn.Exp
+				env, e = NewEnv(fn.Env, fn.Params, List{Val: el.(List).Val[1:]})
+				if e != nil {
+					return nil, e
+				}
+			} else {
+				fn, ok := f.(Func)
+				if !ok {
+					return nil, errors.New("attempt to call non-function")
+				}
+				return fn.Fn(el.(List).Val[1:])
+			}
 		}
-		return f, nil
-	default:
-		el, e := eval_ast(ast, env)
-		if e != nil {
-			return nil, e
-		}
-		f, ok := el.(List).Val[0].(EnvFunc)
-		if !ok {
-			return nil, errors.New("attempt to call non-function")
-		}
-		return f(el.(List).Val[1:])
 	}
+
 }
 
 func eval_ast(ast Expression, env EnvType) (Expression, error) {
@@ -209,7 +226,7 @@ func print(exp Expression) (string, error) {
 	return fmt.Sprintf("%v", exp), nil
 }
 
-func repl(str string) (Expression, error) {
+func Repl(str string) (Expression, error) {
 	var exp Expression
 	var res string
 	var e error

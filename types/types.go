@@ -12,8 +12,6 @@ type ExpressionError struct {
 	Obj Expression
 }
 
-type EnvFunc func(a []Expression) (Expression, error)
-
 func (e ExpressionError) Error() string {
 	return fmt.Sprintf("%#v", e.Obj)
 }
@@ -89,12 +87,16 @@ type Func struct {
 	Meta Expression
 }
 
+func (e Func) Func() string {
+	return fmt.Sprintf("<function %v>", e)
+}
+
 func Func_Q(obj Expression) bool {
 	_, ok := obj.(Func)
 	return ok
 }
 
-type MalFunc struct {
+type ExpressionFunc struct {
 	Eval    func(Expression, EnvType) (Expression, error)
 	Exp     Expression
 	Env     EnvType
@@ -104,25 +106,29 @@ type MalFunc struct {
 	Meta    Expression
 }
 
-func MalFunc_Q(obj Expression) bool {
-	_, ok := obj.(MalFunc)
+func (e ExpressionFunc) String() string {
+	return fmt.Sprintf("(λ %v %v)", e.Params, e.Exp)
+}
+
+func ExpressionFunc_Q(obj Expression) bool {
+	_, ok := obj.(ExpressionFunc)
 	return ok
 }
 
-func (f MalFunc) SetMacro() Expression {
+func (f ExpressionFunc) SetMacro() Expression {
 	f.IsMacro = true
 	return f
 }
 
-func (f MalFunc) GetMacro() bool {
+func (f ExpressionFunc) GetMacro() bool {
 	return f.IsMacro
 }
 
-// Take either a MalFunc or regular function and apply it to the
+// Take either a ExpressionFunc or regular function and apply it to the
 // arguments
 func Apply(f_mt Expression, a []Expression) (Expression, error) {
 	switch f := f_mt.(type) {
-	case MalFunc:
+	case ExpressionFunc:
 		env, e := f.GenEnv(f.Env, f.Params, List{a, nil})
 		if e != nil {
 			return nil, e

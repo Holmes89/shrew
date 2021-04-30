@@ -10,7 +10,7 @@ import (
 	. "github.com/holmes89/shrew/types"
 )
 
-var NS = map[Symbol]EnvFunc{
+var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("+"):       add,
 	makeSymbol("-"):       sub,
 	makeSymbol("*"):       mul,
@@ -46,7 +46,7 @@ func makeSymbol(text string) Symbol {
 
 func fn_q(a []Expression) (Expression, error) {
 	switch f := a[0].(type) {
-	case MalFunc:
+	case ExpressionFunc:
 		return !f.GetMacro(), nil
 	case Func:
 		return true, nil
@@ -494,7 +494,7 @@ func with_meta(a []Expression) (Expression, error) {
 		return HashMap{Val: tobj.Val, Meta: m}, nil
 	case Func:
 		return Func{Fn: tobj.Fn, Meta: m}, nil
-	case MalFunc:
+	case ExpressionFunc:
 		fn := tobj
 		fn.Meta = m
 		return fn, nil
@@ -514,7 +514,7 @@ func meta(a []Expression) (Expression, error) {
 		return tobj.Meta, nil
 	case Func:
 		return tobj.Meta, nil
-	case MalFunc:
+	case ExpressionFunc:
 		return tobj.Meta, nil
 	default:
 		return nil, errors.New("meta not supported on type")
