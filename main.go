@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/holmes89/shrew/core"
 	. "github.com/holmes89/shrew/env"
 	"github.com/holmes89/shrew/lexer"
 	. "github.com/holmes89/shrew/types"
@@ -18,7 +19,9 @@ func main() {
 
 	in := os.Stdin
 	out := os.Stdout
-
+	for k, v := range core.NS {
+		repl_env.Set(k, v)
+	}
 	for {
 		fmt.Print("shrew=> ")
 		scanner := bufio.NewScanner(in)

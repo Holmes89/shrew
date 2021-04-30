@@ -1,7 +1,6 @@
 package env
 
 import (
-	"errors"
 	"fmt"
 
 	. "github.com/holmes89/shrew/types"
@@ -38,57 +37,12 @@ func NewEnv(outer EnvType, binds_mt Expression, exprs_mt Expression) (EnvType, e
 	return env, nil
 }
 
-type EnvFunc func(a []Expression) (Expression, error)
-
 func DefaultEnv() EnvType {
 
 	env, _ := NewEnv(nil, nil, nil)
-	env.Set(symbolAdd, add)
-	env.Set(symbolSubtract, sub)
-	env.Set(symbolMul, mul)
-	env.Set(symbolDiv, div)
+
 	return env
 }
-
-var (
-	add EnvFunc = func(a []Expression) (Expression, error) {
-		if e := assertArgNum(a, 2); e != nil {
-			return nil, e
-		}
-		return a[0].(int) + a[1].(int), nil
-	}
-	sub EnvFunc = func(a []Expression) (Expression, error) {
-		if e := assertArgNum(a, 2); e != nil {
-			return nil, e
-		}
-		return a[0].(int) - a[1].(int), nil
-	}
-	mul EnvFunc = func(a []Expression) (Expression, error) {
-		if e := assertArgNum(a, 2); e != nil {
-			return nil, e
-		}
-		return a[0].(int) * a[1].(int), nil
-	}
-	div EnvFunc = func(a []Expression) (Expression, error) {
-		if e := assertArgNum(a, 2); e != nil {
-			return nil, e
-		}
-		return a[0].(int) / a[1].(int), nil
-	}
-)
-
-func makeSymbol(text string) Symbol {
-	return Symbol{
-		Val: text,
-	}
-}
-
-var (
-	symbolAdd      = makeSymbol("+")
-	symbolSubtract = makeSymbol("-")
-	symbolMul      = makeSymbol("*")
-	symbolDiv      = makeSymbol("/")
-)
 
 func (e Env) Find(key Symbol) EnvType {
 	if _, ok := e.data[key.Val]; ok {
@@ -111,11 +65,4 @@ func (e Env) Get(key Symbol) (Expression, error) {
 		return nil, fmt.Errorf("'%s' not found", key.Val)
 	}
 	return env.(Env).data[key.Val], nil
-}
-
-func assertArgNum(a []Expression, n int) error {
-	if len(a) != n {
-		return errors.New("wrong number of arguments")
-	}
-	return nil
 }

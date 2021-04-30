@@ -12,6 +12,8 @@ type ExpressionError struct {
 	Obj Expression
 }
 
+type EnvFunc func(a []Expression) (Expression, error)
+
 func (e ExpressionError) Error() string {
 	return fmt.Sprintf("%#v", e.Obj)
 }

@@ -20,8 +20,5 @@ In an attempt to learn more about compilers and programming languages I am attem
 
 # Limitiations/Todos 
 
-- [ ] Comments within function breaks functionaliy
-- [ ] Start Variables with Numbers
-- [ ] Variables can contain symbols
-- [ ] Stop panicing
-- [ ] Better REPL stuff (buffer history, nav with keys, etc)
+- [ ] Rewrite vectors for scheme syntax
+- [ ] Hash table syntax
