@@ -204,6 +204,12 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			}
 
 			return fn, nil
+		case "quote":
+			return a1, nil
+		case "quasiquoteexpand":
+			return quasiquote(a1), nil
+		case "quasiquote":
+			ast = quasiquote(a1)
 		default:
 			el, e := eval_ast(ast, env)
 			if e != nil {
@@ -275,6 +281,51 @@ func eval_ast(ast Expression, env EnvType) (Expression, error) {
 		return new_hm, nil
 	default:
 		return ast, nil
+	}
+}
+
+func starts_with(xs []Expression, sym string) bool {
+	if len(xs) <= 0 {
+		return false
+	}
+	s, ok := xs[0].(Symbol)
+	if !ok {
+		return false
+	}
+
+	return s.Val == sym
+}
+
+func qq_loop(xs []Expression) Expression {
+	acc := NewList()
+	for i := len(xs) - 1; 0 <= i; i -= 1 {
+		elt := xs[i]
+		switch e := elt.(type) {
+		case List:
+			if starts_with(e.Val, "splice-unquote") {
+				acc = NewList(Symbol{Val: "concat"}, e.Val[1], acc)
+				continue
+			}
+		default:
+		}
+		acc = NewList(Symbol{Val: "cons"}, quasiquote(elt), acc)
+	}
+	return acc
+}
+
+func quasiquote(ast Expression) Expression {
+	switch a := ast.(type) {
+	case Vector:
+		return NewList(Symbol{Val: "vec"}, qq_loop(a.Val))
+	case HashMap, Symbol:
+		return NewList(Symbol{Val: "quote"}, ast)
+	case List:
+		if starts_with(a.Val, "unquote") {
+			return a.Val[1]
+		}
+		return qq_loop(a.Val)
+	default:
+		return ast
 	}
 }
 
