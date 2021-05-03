@@ -15,13 +15,16 @@ import (
 
 var repl_env = DefaultEnv()
 
+func init() {
+	for k, v := range core.NS {
+		repl_env.Set(k, Func{Fn: v})
+	}
+}
+
 func main() {
 
 	in := os.Stdin
 	out := os.Stdout
-	for k, v := range core.NS {
-		repl_env.Set(k, Func{Fn: v})
-	}
 	for {
 		fmt.Print("shrew=> ")
 		scanner := bufio.NewScanner(in)
