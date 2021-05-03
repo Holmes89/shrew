@@ -7,30 +7,34 @@ import (
 	"strings"
 	"time"
 
+	"github.com/holmes89/shrew/lexer"
 	. "github.com/holmes89/shrew/types"
 )
 
 var NS = map[Symbol]func(a []Expression) (Expression, error){
-	makeSymbol("+"):       add,
-	makeSymbol("-"):       sub,
-	makeSymbol("*"):       mul,
-	makeSymbol("/"):       div,
-	makeSymbol("and"):     and,
-	makeSymbol("apply"):   apply,
-	makeSymbol("car"):     first,
-	makeSymbol("cdr"):     rest,
-	makeSymbol("cons"):    cons,
-	makeSymbol("="):       equal,
-	makeSymbol("eq?"):     equal,
-	makeSymbol(">"):       gt,
-	makeSymbol(">="):      gte,
-	makeSymbol("<"):       lt,
-	makeSymbol("<="):      lte,
-	makeSymbol("null?"):   null,
-	makeSymbol("atom?"):   atom,
-	makeSymbol("number?"): number,
-	makeSymbol("pair?"):   pair,
-	makeSymbol("or?"):     or,
+	makeSymbol("+"):           add,
+	makeSymbol("-"):           sub,
+	makeSymbol("*"):           mul,
+	makeSymbol("/"):           div,
+	makeSymbol("and"):         and,
+	makeSymbol("apply"):       apply,
+	makeSymbol("car"):         first,
+	makeSymbol("cdr"):         rest,
+	makeSymbol("cons"):        cons,
+	makeSymbol("="):           equal,
+	makeSymbol("eq?"):         equal,
+	makeSymbol(">"):           gt,
+	makeSymbol(">="):          gte,
+	makeSymbol("<"):           lt,
+	makeSymbol("<="):          lte,
+	makeSymbol("null?"):       null,
+	makeSymbol("atom?"):       atom,
+	makeSymbol("number?"):     number,
+	makeSymbol("pair?"):       pair,
+	makeSymbol("or?"):         or,
+	makeSymbol("str"):         str,
+	makeSymbol("slurp"):       slurp,
+	makeSymbol("read-string"): read_string,
 }
 
 func makeSymbol(text string) Symbol {
@@ -55,6 +59,13 @@ func fn_q(a []Expression) (Expression, error) {
 	default:
 		return false, nil
 	}
+}
+
+func read_string(a []Expression) (Expression, error) {
+	if e := assertArgNum(a, 1); e != nil {
+		return nil, e
+	}
+	return lexer.Read(strings.NewReader(a[0].(string)))
 }
 
 // Logic
@@ -150,9 +161,13 @@ func lte(a []Expression) (Expression, error) {
 // 	return printer.Pr_list(a, true, "", "", " "), nil
 // }
 
-// func str(a []Expression) (Expression, error) {
-// 	return printer.Pr_list(a, false, "", "", ""), nil
-// }
+func str(a []Expression) (Expression, error) {
+	sarray := []string{}
+	for _, b := range a {
+		sarray = append(sarray, fmt.Sprintf("%+v", b))
+	}
+	return strings.Join(sarray, ""), nil
+}
 
 // func prn(a []Expression) (Expression, error) {
 // 	fmt.Println(printer.Pr_list(a, true, "", "", " "))

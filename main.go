@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -19,15 +21,66 @@ func init() {
 	for k, v := range core.NS {
 		repl_env.Set(k, Func{Fn: v})
 	}
+	repl_env.Set(Symbol{Val: "eval"}, Func{
+		Fn: func(a []Expression) (Expression, error) {
+			return eval(a, repl_env)
+		},
+	})
+	repl_env.Set(Symbol{Val: "load-file"}, Func{
+		Fn: func(a []Expression) (Expression, error) {
+			if len(a) != 1 {
+				return nil, errors.New("load-file arity mismatch expected: 1")
+			}
+			b, err := ioutil.ReadFile(a[0].(string))
+			if err != nil {
+				return nil, errors.New("unable to read file")
+			}
+			buf := bytes.NewBuffer(b)
+			scanner := bufio.NewScanner(buf)
+			var exp Expression
+			for scanner.Scan() {
+				exp, err = lexer.Read(bytes.NewBuffer(scanner.Bytes()))
+				if err != nil {
+					return nil, err
+				}
+				exp, err = eval(exp, repl_env)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return exp, err
+		},
+	})
+	repl_env.Set(Symbol{Val: "*ARGV*"}, List{})
+	// tODO extract
+	_, err := Repl("(define not (lambda (a) (if a false true)))")
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func main() {
 
 	in := os.Stdin
 	out := os.Stdout
+
+	scanner := bufio.NewScanner(in)
+
+	if len(os.Args) > 1 {
+		args := make([]Expression, 0, len(os.Args)-2)
+		for _, a := range os.Args[2:] {
+			args = append(args, a)
+		}
+		repl_env.Set(Symbol{Val: "*ARGV*"}, List{Val: args})
+		if _, e := Repl("(load-file \"" + os.Args[1] + "\")"); e != nil {
+			fmt.Printf("Error: %v\n", e)
+			os.Exit(1)
+		}
+	}
+
 	for {
 		fmt.Print("shrew=> ")
-		scanner := bufio.NewScanner(in)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
