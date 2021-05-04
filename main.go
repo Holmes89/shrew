@@ -107,8 +107,20 @@ func read(str string) (Expression, error) {
 
 // eval
 func eval(ast Expression, env EnvType) (Expression, error) {
+	var e error
 	for {
 		list, ok := ast.(List)
+		if !ok {
+			return eval_ast(ast, env)
+		}
+
+		// apply list
+		ast, e = macroexpand(ast, env)
+		if e != nil {
+			return nil, e
+		}
+
+		list, ok = ast.(List)
 		if !ok {
 			return eval_ast(ast, env)
 		}
@@ -118,7 +130,6 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			return ast, nil
 		}
 
-		// apply list
 		a0 := list.Val[0]
 		var a1 Expression = nil
 		var a2 Expression = nil
@@ -176,6 +187,15 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 				return nil, nil
 			}
 			ast = lst[len(lst)-1]
+		case "defmacro":
+			fn, e := eval(a2, env)
+			fn = fn.(ExpressionFunc).SetMacro()
+			if e != nil {
+				return nil, e
+			}
+			return env.Set(a1.(Symbol), fn), nil
+		case "macroexpand":
+			return macroexpand(a1, env)
 		case "if":
 			cond, e := eval(a1, env)
 			if e != nil {
@@ -210,6 +230,34 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			return quasiquote(a1), nil
 		case "quasiquote":
 			ast = quasiquote(a1)
+		case "try":
+			var exc Expression
+			exp, e := eval(a1, env)
+			if e == nil {
+				return exp, nil
+			} else {
+				if a2 != nil && List_Q(a2) {
+					a2s, _ := GetSlice(a2)
+					if Symbol_Q(a2s[0]) && (a2s[0].(Symbol).Val == "catch*") {
+						switch e.(type) {
+						case ExpressionError:
+							exc = e.(ExpressionError).Obj
+						default:
+							exc = e.Error()
+						}
+						binds := NewList(a2s[1])
+						new_env, e := NewEnv(env, binds, NewList(exc))
+						if e != nil {
+							return nil, e
+						}
+						exp, e = eval(a2s[2], new_env)
+						if e == nil {
+							return exp, nil
+						}
+					}
+				}
+				return nil, e
+			}
 		default:
 			el, e := eval_ast(ast, env)
 			if e != nil {
@@ -329,6 +377,47 @@ func quasiquote(ast Expression) Expression {
 	}
 }
 
+func is_macro_call(ast Expression, env EnvType) bool {
+	if List_Q(ast) {
+		slc, _ := GetSlice(ast)
+		if len(slc) == 0 {
+			return false
+		}
+		a0 := slc[0]
+		sym, ok := a0.(Symbol)
+		if ok && env.Find(sym) != nil {
+			exp, e := env.Get(sym)
+			if e != nil {
+				return false
+			}
+			if ExpressionFunc_Q(exp) {
+				return exp.(ExpressionFunc).GetMacro()
+			}
+		}
+	}
+	return false
+}
+
+func macroexpand(ast Expression, env EnvType) (Expression, error) {
+	var exp Expression
+	var e error
+	for is_macro_call(ast, env) {
+		slc, _ := GetSlice(ast)
+		a0 := slc[0]
+		exp, e = env.Get(a0.(Symbol))
+		if e != nil {
+			return nil, e
+		}
+		fn := exp.(ExpressionFunc)
+		ast, e = Apply(fn, slc[1:])
+		if e != nil {
+			return nil, e
+		}
+	}
+	return ast, nil
+}
+
+// print
 func print(exp Expression) (string, error) {
 	return fmt.Sprintf("%v", exp), nil
 }

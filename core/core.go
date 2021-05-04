@@ -35,6 +35,8 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("str"):         str,
 	makeSymbol("slurp"):       slurp,
 	makeSymbol("read-string"): read_string,
+	makeSymbol("count"):       count,
+	makeSymbol("list"):        func(a []Expression) (Expression, error) { return List{Val: a}, nil },
 }
 
 func makeSymbol(text string) Symbol {
