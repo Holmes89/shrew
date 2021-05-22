@@ -60,6 +60,11 @@ func init() {
 
 }
 
+var (
+	defaultPrompt  = "shrew=> "
+	continuePrompt = "... "
+)
+
 func main() {
 
 	in := os.Stdin
@@ -79,15 +84,32 @@ func main() {
 		}
 	}
 
+	var commandBuf string
+	prompt := defaultPrompt
 	for {
-		fmt.Print("shrew=> ")
+		fmt.Print(prompt)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
 		}
-		text := strings.TrimRight(scanner.Text(), "\n")
+		commandBuf += strings.TrimRight(scanner.Text(), "\n")
 
-		res, err := Repl(text)
+		lparenCount := strings.Count(commandBuf, "(")
+		rparenCount := strings.Count(commandBuf, ")")
+
+		if lparenCount > rparenCount {
+			commandBuf += " "
+			prompt = continuePrompt
+			continue
+		}
+		if rparenCount > lparenCount {
+			commandBuf += ""
+			prompt = defaultPrompt
+			fmt.Printf("Error: mismatch paren\n")
+			continue
+		}
+
+		res, err := Repl(commandBuf)
 		if err != nil {
 			if err.Error() == "<empty line>" {
 				continue
@@ -96,6 +118,8 @@ func main() {
 			continue
 		}
 		fmt.Fprintf(out, "%v\n", res)
+		commandBuf = ""
+		prompt = defaultPrompt
 	}
 
 }
