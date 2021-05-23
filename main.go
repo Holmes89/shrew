@@ -163,7 +163,7 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 		}
 
 		if listLen > 2 {
-			a2 = ast.(List).Val[2]
+			a2 = list.Val[2]
 		}
 
 		a0sym := "__<*fn*>__"
@@ -234,6 +234,23 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			} else {
 				ast = a2
 			}
+		case "cond":
+			for _, c := range list.Val[1:] {
+				cond, ok := c.(List)
+				if !ok {
+					return nil, errors.New("does not evaluate")
+				}
+
+				res, e := eval(cond.Val[0], env)
+				if e != nil {
+					return nil, e
+				}
+				if res == true {
+					return cond.Val[1], nil
+				}
+			}
+
+			return nil, nil
 		case "λ":
 			fallthrough
 		case "lambda":
