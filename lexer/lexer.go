@@ -42,6 +42,9 @@ func makeExpression(token string, exp Expression) List {
 func (l *Lexer) readForm() (Expression, error) {
 	l.eatWhitespace()
 	switch l.Peek() {
+	case ';':
+		l.skipLine()
+		return nil, nil
 	case '\'':
 		l.Next()
 		form, err := l.readForm()
@@ -109,6 +112,8 @@ func (l *Lexer) readForm() (Expression, error) {
 	}
 }
 
+var ErrEOF = errors.New("end of line")
+
 func (l *Lexer) readList() (Expression, error) {
 	var endToken rune
 	switch t := l.Next(); {
@@ -125,7 +130,7 @@ func (l *Lexer) readList() (Expression, error) {
 	for {
 		token := l.Peek()
 		if token == scanner.EOF {
-			return nil, fmt.Errorf("expected '%s' not EOF", string(endToken))
+			return nil, ErrEOF
 		}
 		if token == endToken {
 			break
@@ -147,6 +152,15 @@ func (l *Lexer) eatWhitespace() {
 			break
 		}
 		l.Next()
+	}
+}
+
+func (l *Lexer) skipLine() {
+	for {
+		p := l.Next()
+		if p == '\n' || p == '\r' || p == scanner.EOF {
+			break
+		}
 	}
 }
 
