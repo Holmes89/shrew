@@ -60,6 +60,11 @@ func init() {
 
 }
 
+var (
+	defaultPrompt  = "shrew=> "
+	continuePrompt = "... "
+)
+
 func main() {
 
 	in := os.Stdin
@@ -79,15 +84,32 @@ func main() {
 		}
 	}
 
+	var commandBuf string
+	prompt := defaultPrompt
 	for {
-		fmt.Print("shrew=> ")
+		fmt.Print(prompt)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
 		}
-		text := strings.TrimRight(scanner.Text(), "\n")
+		commandBuf += strings.TrimRight(scanner.Text(), "\n")
 
-		res, err := Repl(text)
+		lparenCount := strings.Count(commandBuf, "(")
+		rparenCount := strings.Count(commandBuf, ")")
+
+		if lparenCount > rparenCount {
+			commandBuf += " "
+			prompt = continuePrompt
+			continue
+		}
+		if rparenCount > lparenCount {
+			commandBuf += ""
+			prompt = defaultPrompt
+			fmt.Printf("Error: mismatch paren\n")
+			continue
+		}
+
+		res, err := Repl(commandBuf)
 		if err != nil {
 			if err.Error() == "<empty line>" {
 				continue
@@ -96,6 +118,8 @@ func main() {
 			continue
 		}
 		fmt.Fprintf(out, "%v\n", res)
+		commandBuf = ""
+		prompt = defaultPrompt
 	}
 
 }
@@ -139,7 +163,7 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 		}
 
 		if listLen > 2 {
-			a2 = ast.(List).Val[2]
+			a2 = list.Val[2]
 		}
 
 		a0sym := "__<*fn*>__"
@@ -210,6 +234,33 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			} else {
 				ast = a2
 			}
+		case "else":
+			return a1, nil
+		case "cond":
+			for _, c := range list.Val[1:] {
+				cond, ok := c.(List)
+				if !ok {
+					return nil, errors.New("does not evaluate")
+				}
+
+				exp := cond.Val[0]
+				var res Expression
+				var e error
+				if _, ok := exp.(List); ok {
+					res, e = eval(exp, env)
+					if e != nil {
+						return nil, e
+					}
+					if res == true {
+						return eval(cond.Val[1], env)
+					}
+					continue
+				}
+				//assume else?
+				return eval(cond, env)
+			}
+
+			return nil, nil
 		case "λ":
 			fallthrough
 		case "lambda":
@@ -274,7 +325,7 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			} else {
 				fn, ok := f.(Func)
 				if !ok {
-					return nil, errors.New("attempt to call non-function")
+					return nil, fmt.Errorf("attempt to call non-function: %v", f)
 				}
 				return fn.Fn(el.(List).Val[1:])
 			}

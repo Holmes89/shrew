@@ -222,7 +222,11 @@ func (l *Lexer) alphanum(r rune) (Expression, error) {
 	switch s := l.buf.String(); {
 	case s == "true":
 		return true, nil
+	case s == "#t":
+		return true, nil
 	case s == "false":
+		return false, nil
+	case s == "#f":
 		return false, nil
 	case s == "nil":
 		return nil, nil
