@@ -581,7 +581,7 @@ func atom(a []Expression) (Expression, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
 	}
-	return Atom_Q(a[0]), nil
+	return !List_Q(a[0]), nil // HACK
 }
 
 func pair(a []Expression) (Expression, error) {

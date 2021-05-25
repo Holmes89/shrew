@@ -234,6 +234,8 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			} else {
 				ast = a2
 			}
+		case "else":
+			return a1, nil
 		case "cond":
 			for _, c := range list.Val[1:] {
 				cond, ok := c.(List)
@@ -241,13 +243,21 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 					return nil, errors.New("does not evaluate")
 				}
 
-				res, e := eval(cond.Val[0], env)
-				if e != nil {
-					return nil, e
+				exp := cond.Val[0]
+				var res Expression
+				var e error
+				if _, ok := exp.(List); ok {
+					res, e = eval(exp, env)
+					if e != nil {
+						return nil, e
+					}
+					if res == true {
+						return eval(cond.Val[1], env)
+					}
+					continue
 				}
-				if res == true {
-					return cond.Val[1], nil
-				}
+				//assume else?
+				return eval(cond, env)
 			}
 
 			return nil, nil
@@ -315,7 +325,7 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 			} else {
 				fn, ok := f.(Func)
 				if !ok {
-					return nil, errors.New("attempt to call non-function")
+					return nil, fmt.Errorf("attempt to call non-function: %v", f)
 				}
 				return fn.Fn(el.(List).Val[1:])
 			}

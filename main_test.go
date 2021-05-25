@@ -7,16 +7,37 @@ import (
 )
 
 func TestRepl(t *testing.T) {
-	res, err := Repl(`(cond ((> 1 3) 1) ((< 1 3) -1))`)
+	res, err := Repl(`(define lat?
+		(lambda (l)
+		  (cond
+			((null? l) #t)
+			((atom? (car l)) (lat? (cdr l)))
+			(else #f))))`)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
-	if res == nil {
+	res, err = Repl(`(lat? '(Jack Sprat could eat no chicken fat))`)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	if res == true {
 		t.Error("should not be nil")
 		t.FailNow()
 	}
-	panic(res)
+}
+
+func TestAtomQ(t *testing.T) {
+	res, err := Repl(`(atom? (car '(1)))`)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	if res == true {
+		t.Error("should not be nil")
+		t.FailNow()
+	}
 }
 
 // res, err := Repl(`(define foo (lambda (n) (if (= n 0) 0 (bar (- n 1)))))`)
