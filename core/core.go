@@ -17,6 +17,7 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("*"):           mul,
 	makeSymbol("/"):           div,
 	makeSymbol("and"):         and,
+	makeSymbol("or"):          or,
 	makeSymbol("apply"):       apply,
 	makeSymbol("car"):         first,
 	makeSymbol("cdr"):         rest,
@@ -36,6 +37,7 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("slurp"):       slurp,
 	makeSymbol("read-string"): read_string,
 	makeSymbol("count"):       count,
+	makeSymbol("zero?"):       zero,
 	makeSymbol("list"):        func(a []Expression) (Expression, error) { return List{Val: a}, nil },
 }
 
@@ -95,31 +97,51 @@ func equal(a []Expression) (Expression, error) {
 
 // Math
 func add(a []Expression) (Expression, error) {
-	if e := assertArgNum(a, 2); e != nil {
-		return nil, e
+	var res int
+	for _, e := range a {
+		n, ok := e.(int)
+		if !ok {
+			return nil, errors.New("expected number")
+		}
+		res += n
 	}
-	return a[0].(int) + a[1].(int), nil
+	return res, nil
 }
 
 func sub(a []Expression) (Expression, error) {
-	if e := assertArgNum(a, 2); e != nil {
-		return nil, e
+	var res int
+	for _, e := range a {
+		n, ok := e.(int)
+		if !ok {
+			return nil, errors.New("expected number")
+		}
+		res -= n
 	}
-	return a[0].(int) - a[1].(int), nil
+	return res, nil
 }
 
 func mul(a []Expression) (Expression, error) {
-	if e := assertArgNum(a, 2); e != nil {
-		return nil, e
+	var res int
+	for _, e := range a {
+		n, ok := e.(int)
+		if !ok {
+			return nil, errors.New("expected number")
+		}
+		res *= n
 	}
-	return a[0].(int) * a[1].(int), nil
+	return res, nil
 }
 
 func div(a []Expression) (Expression, error) {
-	if e := assertArgNum(a, 2); e != nil {
-		return nil, e
+	var res int
+	for _, e := range a {
+		n, ok := e.(int)
+		if !ok {
+			return nil, errors.New("expected number")
+		}
+		res /= n
 	}
-	return a[0].(int) / a[1].(int), nil
+	return res, nil
 }
 
 func assertArgNum(a []Expression, n int) error {
@@ -574,6 +596,10 @@ func null(a []Expression) (Expression, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
 	}
+	list, ok := a[0].(List)
+	if ok {
+		return len(list.Val) == 0, nil
+	}
 	return Nil_Q(a[0]), nil
 }
 
@@ -582,6 +608,13 @@ func atom(a []Expression) (Expression, error) {
 		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
 	}
 	return !List_Q(a[0]), nil // HACK
+}
+
+func zero(a []Expression) (Expression, error) {
+	if len(a) != 1 {
+		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
+	}
+	return a[0] == 0, nil // HACK
 }
 
 func pair(a []Expression) (Expression, error) {

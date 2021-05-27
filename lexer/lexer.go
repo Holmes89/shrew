@@ -200,7 +200,7 @@ func (l *Lexer) readAtom() (Expression, error) {
 }
 
 func isAlphanum(r rune) bool {
-	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-' || r == '*'
+	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-' || r == '*' || r == '+'
 }
 
 func isNumber(r rune) bool {
