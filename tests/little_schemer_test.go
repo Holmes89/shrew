@@ -1,0 +1,79 @@
+package repltests
+
+import (
+	"fmt"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/holmes89/shrew/core"
+	"github.com/holmes89/shrew/env"
+	"github.com/holmes89/shrew/repl"
+	. "github.com/holmes89/shrew/types"
+	"github.com/stretchr/testify/suite"
+)
+
+type LittleSchemerTestSuite struct {
+	suite.Suite
+	ev EnvType
+}
+
+// In order for 'go test' to run this suite, we need to create
+// a normal test function and pass our suite to suite.Run
+func TestLittleSchemerTestSuite(t *testing.T) {
+	suite.Run(t, new(LittleSchemerTestSuite))
+}
+
+func (suite *LittleSchemerTestSuite) LoadLibrary(i int) {
+	suite.ev = env.DefaultEnv()
+	for k, v := range core.NS {
+		suite.ev.Set(k, Func{Fn: v})
+	}
+	suite.ev.Set(Symbol{Val: "eval"}, Func{
+		Fn: func(a []Expression) (Expression, error) {
+			return repl.Eval(a, suite.ev)
+		},
+	})
+	b, err := os.ReadFile(fmt.Sprintf("little-schemer/chapter-%d.scm", i))
+	if err != nil {
+		suite.FailNow(err.Error())
+	}
+	for _, lib := range strings.Split(string(b), "\n\n") {
+		if _, err := repl.Repl(lib, suite.ev); err != nil {
+			suite.FailNow(err.Error())
+		}
+	}
+
+}
+
+func (suite *LittleSchemerTestSuite) TestRepl() {
+	tt := []booktests{
+		// Chapter 1 is just basic scheme commands, maybe add without repl load?
+		{Chapter: 2, Tests: chapter2},
+		{Chapter: 3, Tests: chapter3},
+		{Chapter: 4, Tests: chapter4},
+	}
+
+	for _, t := range tt {
+		suite.LoadLibrary(t.Chapter)
+		suite.process(t.Tests)
+	}
+}
+
+func (suite *LittleSchemerTestSuite) process(tests []chaptertest) {
+	for _, t := range tests {
+		res, err := repl.Repl(t.Command, suite.ev)
+		suite.NoError(err)
+		suite.Equal(t.Result, res, t.Command)
+	}
+}
+
+type booktests struct {
+	Chapter int
+	Tests   []chaptertest
+}
+
+type chaptertest struct {
+	Command string
+	Result  string
+}

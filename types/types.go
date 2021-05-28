@@ -151,7 +151,7 @@ type List struct {
 
 func (l List) String() string {
 	str := strings.Builder{}
-	str.WriteRune('(')
+	str.WriteString(`(`)
 	for _, v := range l.Val {
 		if str.Len() != 1 {
 			str.WriteRune(' ')
