@@ -22,9 +22,10 @@ In an attempt to learn more about compilers and programming languages I am attem
 
 - [ ] Rewrite vectors for scheme syntax
 - [ ] Hash table syntax
-- [ ] true/false values #t #f
+- [x] true/false values #t #f
 - [ ] REPL buffer of calls
-- [ ] Comments support
-- [ ] Multi line support repl
+- [x] Comments support
+- [x] Multi line support repl
 - [ ] "arity mismatch"
 - [ ] apply to list functions
+- [ ] tail call optimization

@@ -127,7 +127,7 @@ func sub(a []Expression) (Expression, error) {
 }
 
 func mul(a []Expression) (Expression, error) {
-	var res int
+	res := 1
 	for _, e := range a {
 		n, ok := e.(int)
 		if !ok {
@@ -139,11 +139,14 @@ func mul(a []Expression) (Expression, error) {
 }
 
 func div(a []Expression) (Expression, error) {
-	var res int
+	res := 1
 	for _, e := range a {
 		n, ok := e.(int)
 		if !ok {
 			return nil, errors.New("expected number")
+		}
+		if n == 0 {
+			return nil, errors.New("divide by zero")
 		}
 		res /= n
 	}
