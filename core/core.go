@@ -109,8 +109,14 @@ func add(a []Expression) (Expression, error) {
 }
 
 func sub(a []Expression) (Expression, error) {
-	var res int
-	for _, e := range a {
+	if len(a) == 0 {
+		return nil, errors.New("arity mismatch")
+	}
+	if len(a) == 1 {
+		return -1 * a[0].(int), nil
+	}
+	res := a[0].(int)
+	for _, e := range a[1:] {
 		n, ok := e.(int)
 		if !ok {
 			return nil, errors.New("expected number")
