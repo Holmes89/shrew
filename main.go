@@ -237,7 +237,7 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 				ast = a2
 			}
 		case "else":
-			return eval_ast(a1, env)
+			return eval(a1, env)
 		case "cond":
 			for _, c := range list.Val[1:] {
 				cond, ok := c.(List)
