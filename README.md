@@ -29,3 +29,16 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [ ] "arity mismatch"
 - [ ] apply to list functions
 - [ ] tail call optimization
+
+# Little Schemer Progress
+
+- [x] Chapter 1
+- [x] Chapter 2
+- [x] Chapter 3
+- [x] Chapter 4
+- [ ] Chapter 5
+- [ ] Chapter 6
+- [ ] Chapter 7
+- [ ] Chapter 8
+- [ ] Chapter 9
+- [ ] Chapter 10
