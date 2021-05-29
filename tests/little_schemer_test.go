@@ -24,7 +24,7 @@ func TestLittleSchemerTestSuite(t *testing.T) {
 	suite.Run(t, new(LittleSchemerTestSuite))
 }
 
-func (suite *LittleSchemerTestSuite) LoadLibrary(i int) {
+func (suite *LittleSchemerTestSuite) SetupSuite() {
 	suite.ev = env.DefaultEnv()
 	for k, v := range core.NS {
 		suite.ev.Set(k, Func{Fn: v})
@@ -34,6 +34,9 @@ func (suite *LittleSchemerTestSuite) LoadLibrary(i int) {
 			return repl.Eval(a, suite.ev)
 		},
 	})
+}
+
+func (suite *LittleSchemerTestSuite) LoadLibrary(i int) {
 	b, err := os.ReadFile(fmt.Sprintf("little-schemer/chapter-%d.scm", i))
 	if err != nil {
 		suite.FailNow(err.Error())
@@ -52,6 +55,7 @@ func (suite *LittleSchemerTestSuite) TestRepl() {
 		{Chapter: 2, Tests: chapter2},
 		{Chapter: 3, Tests: chapter3},
 		{Chapter: 4, Tests: chapter4},
+		{Chapter: 5, Tests: chapter5},
 	}
 
 	for _, t := range tt {
