@@ -190,8 +190,6 @@ func (l *Lexer) readAtom() (Expression, error) {
 		return nil, errors.New("EOF")
 	case t == '"': // quoted string
 		return l.str()
-	case isNumber(t): // number
-		return l.number(t)
 	case t == ':':
 		return l.keyword(t)
 	default:
@@ -200,7 +198,7 @@ func (l *Lexer) readAtom() (Expression, error) {
 }
 
 func isAlphanum(r rune) bool {
-	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-' || r == '*' || r == '+' || r == '>' || r == '<' || r == '=' || r == '^' || r == '/'
+	return r == '_' || isNumber(r) || unicode.IsLetter(r) || r == '?' || r == '!' || r == '-' || r == '*' || r == '+' || r == '>' || r == '<' || r == '=' || r == '^' || r == '/' || r == '.'
 }
 
 func isNumber(r rune) bool {
@@ -219,16 +217,24 @@ func (l *Lexer) number(r rune) (Expression, error) {
 
 func (l *Lexer) alphanum(r rune) (Expression, error) {
 	l.accum(r, isAlphanum)
-	switch s := l.buf.String(); {
-	case s == "true":
+	s := l.buf.String()
+
+	// Check to see if int
+	i, err := strconv.Atoi(s)
+	if err == nil {
+		return i, nil
+	}
+
+	switch s {
+	case "true":
 		return true, nil
-	case s == "#t":
+	case "#t":
 		return true, nil
-	case s == "false":
+	case "false":
 		return false, nil
-	case s == "#f":
+	case "#f":
 		return false, nil
-	case s == "nil":
+	case "nil":
 		return nil, nil
 	default:
 		return Symbol{Val: s}, nil

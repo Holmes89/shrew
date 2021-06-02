@@ -16,6 +16,8 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("-"):           sub,
 	makeSymbol("*"):           mul,
 	makeSymbol("/"):           div,
+	makeSymbol("^"):           expt,
+	makeSymbol("expt"):        expt,
 	makeSymbol("and"):         and,
 	makeSymbol("or"):          or,
 	makeSymbol("apply"):       apply,
@@ -151,6 +153,20 @@ func div(a []Expression) (Expression, error) {
 		res /= n
 	}
 	return res, nil
+}
+
+// TODO this is messy
+func expt(a []Expression) (Expression, error) {
+	if e := assertArgNum(a, 2); e != nil {
+		return nil, e
+	}
+	b := a[0].(int)
+	s := b
+	pow := a[1].(int)
+	for p := pow - 1; p > 0; p-- {
+		s *= b
+	}
+	return s, nil
 }
 
 func assertArgNum(a []Expression, n int) error {

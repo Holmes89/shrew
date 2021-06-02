@@ -22,10 +22,10 @@ func eval(ast Expression, env EnvType) (Expression, error) {
 	var e error
 	for {
 		list, ok := ast.(List)
+
 		if !ok {
 			return eval_ast(ast, env)
 		}
-
 		// apply list
 		ast, e = macroexpand(ast, env)
 		if e != nil {
