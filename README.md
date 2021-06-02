@@ -25,6 +25,7 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [x] true/false values #t #f
 - [ ] REPL buffer of calls
 - [x] Comments support
+- [x] Comments in code block
 - [x] Multi line support repl
 - [ ] "arity mismatch"
 - [ ] apply to list functions
@@ -36,7 +37,7 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [x] Chapter 2
 - [x] Chapter 3
 - [x] Chapter 4
-- [ ] Chapter 5
+- [x] Chapter 5
 - [ ] Chapter 6
 - [ ] Chapter 7
 - [ ] Chapter 8
