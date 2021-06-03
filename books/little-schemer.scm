@@ -2367,7 +2367,7 @@
 ; ==> '(38 1920 (2 8) 10 (() 6) 2)
 
 ;
-; Chapter 8 of The Little Schemer:
+; Chapter 9 of The Little Schemer:
 ; ...and Again, and Again, and Again, ...
 ;
 ; Code examples assemled by Jinpu Hu (hujinpu@gmail.com).

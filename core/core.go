@@ -41,6 +41,8 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("read-string"): read_string,
 	makeSymbol("count"):       count,
 	makeSymbol("zero?"):       zero,
+	makeSymbol("even?"):       even,
+	makeSymbol("length"):      length,
 	makeSymbol("list"):        func(a []Expression) (Expression, error) { return List{Val: a}, nil },
 }
 
@@ -652,6 +654,28 @@ func zero(a []Expression) (Expression, error) {
 		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
 	}
 	return a[0] == 0, nil // HACK
+}
+
+func even(a []Expression) (Expression, error) {
+	if len(a) != 1 {
+		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
+	}
+	i, ok := a[0].(int)
+	if !ok {
+		return nil, errors.New("expected integer")
+	}
+	return i%2 == 0, nil
+}
+
+func length(a []Expression) (Expression, error) {
+	if len(a) != 1 {
+		return nil, fmt.Errorf("wrong number of arguments (%d instead of 1)", len(a))
+	}
+	l, ok := a[0].(List)
+	if !ok {
+		return nil, errors.New("list required")
+	}
+	return len(l.Val), nil // HACK
 }
 
 func pair(a []Expression) (Expression, error) {
