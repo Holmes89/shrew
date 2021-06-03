@@ -53,12 +53,6 @@ func init() {
 		},
 	})
 	repl_env.Set(Symbol{Val: "*ARGV*"}, List{})
-	// tODO extract
-	_, err := Repl("(define not (lambda (a) (if a false true)))", repl_env)
-	if err != nil {
-		panic(err)
-	}
-
 }
 
 var (

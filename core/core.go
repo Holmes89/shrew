@@ -20,6 +20,7 @@ var NS = map[Symbol]func(a []Expression) (Expression, error){
 	makeSymbol("expt"):        expt,
 	makeSymbol("and"):         and,
 	makeSymbol("or"):          or,
+	makeSymbol("not"):         not,
 	makeSymbol("apply"):       apply,
 	makeSymbol("car"):         first,
 	makeSymbol("cdr"):         rest,
@@ -88,6 +89,17 @@ func or(a []Expression) (Expression, error) {
 		return nil, e
 	}
 	return a[0].(bool) || a[1].(bool), nil
+}
+
+func not(a []Expression) (Expression, error) {
+	if e := assertArgNum(a, 1); e != nil {
+		return nil, e
+	}
+	b, ok := a[0].(bool)
+	if !ok {
+		return false, nil
+	}
+	return !b, nil
 }
 
 func equal(a []Expression) (Expression, error) {
