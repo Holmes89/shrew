@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/holmes89/shrew/core"
 	. "github.com/holmes89/shrew/env"
 	"github.com/holmes89/shrew/lexer"
@@ -62,61 +62,58 @@ var (
 
 func main() {
 
-	in := os.Stdin
-	out := os.Stdout
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:                 defaultPrompt,
+		HistoryFile:            "/tmp/shrew",
+		DisableAutoSaveHistory: true,
+	})
+	rl.SetVimMode(false)
 
-	scanner := bufio.NewScanner(in)
-
-	if len(os.Args) > 1 {
-		args := make([]Expression, 0, len(os.Args)-2)
-		for _, a := range os.Args[2:] {
-			args = append(args, a)
-		}
-		repl_env.Set(Symbol{Val: "*ARGV*"}, List{Val: args})
-		if _, e := Repl("(load-file \""+os.Args[1]+"\")", repl_env); e != nil {
-			fmt.Printf("Error: %v\n", e)
-			os.Exit(1)
-		}
+	if err != nil {
+		panic(err)
 	}
+	defer rl.Close()
 
-	var commandBuf string
-	prompt := defaultPrompt
+	var cmds []string
 	for {
-		fmt.Print(prompt)
-		scanned := scanner.Scan()
-		if !scanned {
-			return
+		line, err := rl.Readline()
+		if err != nil {
+			break
 		}
-		commandBuf += strings.TrimRight(scanner.Text(), "\n")
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+		cmds = append(cmds, line)
+		cmd := strings.Join(cmds, " ")
 
-		lparenCount := strings.Count(commandBuf, "(")
-		rparenCount := strings.Count(commandBuf, ")")
+		lparenCount := strings.Count(cmd, "(")
+		rparenCount := strings.Count(cmd, ")")
 
 		if lparenCount > rparenCount {
-			commandBuf += " "
-			prompt = continuePrompt
+			rl.SetPrompt(continuePrompt)
 			continue
 		}
 		if rparenCount > lparenCount {
-			commandBuf += ""
-			prompt = defaultPrompt
+			rl.SetPrompt(defaultPrompt)
+			rl.SaveHistory(cmd)
+			cmds = cmds[:0]
 			fmt.Printf("Error: mismatch paren\n")
 			continue
 		}
 
-		res, err := Repl(commandBuf, repl_env)
+		res, err := Repl(cmd, repl_env)
+		rl.SetPrompt(defaultPrompt)
+		rl.SaveHistory(cmd)
+		cmds = cmds[:0]
 		if err != nil {
 			if err.Error() == "<empty line>" {
 				continue
 			}
 			fmt.Printf("Error: %v\n", err)
-			commandBuf = ""
-			prompt = defaultPrompt
+
 			continue
 		}
-		fmt.Fprintf(out, "%v\n", res)
-		commandBuf = ""
-		prompt = defaultPrompt
+		fmt.Printf("%v\n", res)
 	}
-
 }

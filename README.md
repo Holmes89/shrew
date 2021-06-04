@@ -23,7 +23,7 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [ ] Rewrite vectors for scheme syntax
 - [ ] Hash table syntax
 - [x] true/false values #t #f
-- [ ] REPL buffer of calls
+- [x] REPL buffer of calls
 - [x] Comments support
 - [x] Comments in code block
 - [x] Multi line support repl
