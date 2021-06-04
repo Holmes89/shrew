@@ -31,6 +31,7 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [ ] apply to list functions
 - [ ] tail call optimization
 - [ ] load library function
+- [ ] white space in list
 
 # Little Schemer Progress
 

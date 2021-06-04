@@ -96,7 +96,6 @@ func (l *Lexer) readForm() (Expression, error) {
 		return nil, errors.New("unexpected ')'")
 	case '(':
 		return l.readList()
-
 	// vector
 	case ']':
 		return nil, errors.New("unexpected ']'")

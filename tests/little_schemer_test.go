@@ -43,6 +43,7 @@ func (suite *LittleSchemerTestSuite) LoadLibrary(i int) {
 	}
 	for _, lib := range strings.Split(string(b), "\n\n") {
 		if _, err := repl.Repl(lib, suite.ev); err != nil {
+			fmt.Printf("invalid input: %s", lib)
 			suite.FailNow(err.Error())
 		}
 	}
@@ -59,6 +60,7 @@ func (suite *LittleSchemerTestSuite) TestRepl() {
 		{Chapter: 6, Tests: chapter6},
 		{Chapter: 7, Tests: chapter7},
 		{Chapter: 8, Tests: chapter8},
+		{Chapter: 9, Tests: chapter9},
 	}
 
 	for _, t := range tt {
