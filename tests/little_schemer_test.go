@@ -61,6 +61,7 @@ func (suite *LittleSchemerTestSuite) TestRepl() {
 		{Chapter: 7, Tests: chapter7},
 		{Chapter: 8, Tests: chapter8},
 		{Chapter: 9, Tests: chapter9},
+		{Chapter: 10, Tests: chapter10},
 	}
 
 	for _, t := range tt {
