@@ -249,6 +249,10 @@ func HashMap_Q(obj Expression) bool {
 	return ok
 }
 
+// func Quote(obj Expression) Expression {
+// 	Symbol
+// }
+
 // Atoms
 type Atom struct {
 	Val  Expression
