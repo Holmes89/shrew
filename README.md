@@ -27,11 +27,10 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [x] Comments support
 - [x] Comments in code block
 - [x] Multi line support repl
-- [ ] "arity mismatch"
 - [ ] apply to list functions
 - [ ] tail call optimization
 - [ ] load library function
-- [ ] white space in list
+- [x] white space in list
 
 # Little Schemer Progress
 
@@ -40,8 +39,8 @@ In an attempt to learn more about compilers and programming languages I am attem
 - [x] Chapter 3
 - [x] Chapter 4
 - [x] Chapter 5
-- [ ] Chapter 6
-- [ ] Chapter 7
-- [ ] Chapter 8
-- [ ] Chapter 9
-- [ ] Chapter 10
+- [x] Chapter 6
+- [x] Chapter 7
+- [x] Chapter 8
+- [x] Chapter 9
+- [x] Chapter 10

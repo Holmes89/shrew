@@ -128,6 +128,10 @@ func (l *Lexer) readList() (Expression, error) {
 	list := []Expression{}
 	for {
 		token := l.Peek()
+		if isSpace(token) {
+			l.Next()
+			continue
+		}
 		if token == scanner.EOF {
 			return nil, ErrEOF
 		}
